@@ -3,6 +3,7 @@ package app
 import (
 	"log"
 	"os"
+	"time"
 
 	"github.com/ilyakaznacheev/cleanenv"
 )
@@ -21,10 +22,16 @@ type ServerConfig struct {
 	Address string `env:"SERVER_ADDRESS" env-default:"0.0.0.0:8080"`
 }
 
+type AuthConfig struct {
+	Secret        string        `yaml:"secret" env:"AUTH_SECRET" env-required:"true"`
+	TokenLifetime time.Duration `yaml:"token_lifetime" env:"AUTH_TOKEN_LIFETIME" env-default:"10m"`
+}
+
 type Config struct {
 	Logger   LoggerConfig
 	Postgres PgConfig
 	Server   ServerConfig
+	Auth     AuthConfig
 }
 
 func MustLoadConfig(configPath string) *Config {
