@@ -26,6 +26,7 @@
             pkgs.go-mockery
             pkgs.golangci-lint
             pkgs.gotests
+            pkgs.sqlc
             pkgs.delve
             pkgs.postgresql_17
           ];
