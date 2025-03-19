@@ -12,7 +12,7 @@ var ErrInvalidPriority = errors.New("invalid priority")
 
 type Status string
 
-func (s Status) ToString() string {
+func (s Status) String() string {
 	return string(s)
 }
 
@@ -28,17 +28,17 @@ var statuses = map[string]Status{
 	string(Done):       Done,
 }
 
-func newStatus(st string) (Status, error) {
-	status, ok := statuses[st]
+func NewStatus(st string) (Status, error) {
+	s, ok := statuses[st]
 	if !ok {
 		return Pending, ErrInvalidStatus
 	}
-	return status, nil
+	return s, nil
 }
 
 type Priority string
 
-func (p Priority) ToString() string {
+func (p Priority) String() string {
 	return string(p)
 }
 
@@ -54,18 +54,26 @@ var priorities = map[string]Priority{
 	string(High):   High,
 }
 
-func newPriority(pr string) (Priority, error) {
-	priority, ok := priorities[pr]
+func NewPriority(pr string) (Priority, error) {
+	p, ok := priorities[pr]
 	if !ok {
 		return Low, ErrInvalidPriority
 	}
-	return priority, nil
+	return p, nil
 }
 
-type taskId uuid.UUID
+type TaskId uuid.UUID
 
-type task struct {
-	Id          taskId
+func NewTaskId(id string) (TaskId, error) {
+	uid, err := uuid.Parse(id)
+	if err != nil {
+		return TaskId(uuid.Nil), err
+	}
+	return TaskId(uid), nil
+}
+
+type Task struct {
+	Id          TaskId
 	Title       string
 	Description *string
 	Status      Status
@@ -75,15 +83,21 @@ type task struct {
 	UpdatedAt   time.Time
 }
 
-func newTask(dto CreateTaskDTO) task {
+func NewTask(
+	title string,
+	description *string,
+	status Status,
+	priority Priority,
+	dueDate time.Time,
+) Task {
 	now := time.Now()
-	return task{
-		Id:          taskId(uuid.New()),
-		Title:       dto.Title,
-		Description: dto.Description,
-		Status:      dto.Status,
-		Priority:    dto.Priority,
-		DueDate:     dto.DueDate,
+	return Task{
+		Id:          TaskId(uuid.New()),
+		Title:       title,
+		Description: description,
+		Status:      status,
+		Priority:    priority,
+		DueDate:     dueDate,
 		CreatedAt:   now,
 		UpdatedAt:   now,
 	}

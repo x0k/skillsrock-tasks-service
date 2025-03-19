@@ -53,6 +53,7 @@ func (ac *authController) handleAccess(c *fiber.Ctx, handle func(Credentials) (s
 		return err
 	}
 	if err := validator_adapter.ValidateStruct(&credentials); err != nil {
+		ac.log.Debug(c.Context(), "invalid credentials struct")
 		return fiber_adapter.BadRequest(err)
 	}
 	accessToken, sErr := handle(credentials)
