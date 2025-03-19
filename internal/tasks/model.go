@@ -9,6 +9,8 @@ import (
 
 var ErrInvalidStatus = errors.New("invalid status")
 var ErrInvalidPriority = errors.New("invalid priority")
+var ErrTaskNotFound = errors.New("task not found")
+var ErrTaskIsAlreadyDone = errors.New("task is already done")
 
 type Status string
 
@@ -64,6 +66,10 @@ func NewPriority(pr string) (Priority, error) {
 
 type TaskId uuid.UUID
 
+func (id TaskId) String() string {
+	return uuid.UUID(id).String()
+}
+
 func NewTaskId(id string) (TaskId, error) {
 	uid, err := uuid.Parse(id)
 	if err != nil {
@@ -83,22 +89,36 @@ type Task struct {
 	UpdatedAt   time.Time
 }
 
-func NewTask(
-	title string,
-	description *string,
-	status Status,
-	priority Priority,
-	dueDate time.Time,
-) Task {
+type TaskParams struct {
+	Title       string
+	Description *string
+	Status      Status
+	Priority    Priority
+	DueDate     time.Time
+}
+
+func NewTask(params TaskParams) Task {
 	now := time.Now()
 	return Task{
 		Id:          TaskId(uuid.New()),
-		Title:       title,
-		Description: description,
-		Status:      status,
-		Priority:    priority,
-		DueDate:     dueDate,
+		Title:       params.Title,
+		Description: params.Description,
+		Status:      params.Status,
+		Priority:    params.Priority,
+		DueDate:     params.DueDate,
 		CreatedAt:   now,
 		UpdatedAt:   now,
 	}
+}
+
+type TasksFilter struct {
+	Title     *string
+	Status    *Status
+	Priority  *Priority
+	DueBefore *time.Time
+	DueAfter  *time.Time
+}
+
+func (f TasksFilter) IsEmpty() bool {
+	return f.Title == nil && f.Status == nil && f.Priority == nil && f.DueBefore == nil && f.DueAfter == nil
 }

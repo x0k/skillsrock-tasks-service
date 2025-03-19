@@ -4,12 +4,16 @@ SELECT * FROM "user" WHERE login = $1;
 -- name: InsertUser :exec
 INSERT INTO "user" (login, password_hash) VALUES ($1, $2);
 
--- name: InsertTask :exec
-INSERT INTO task (title, description, status, priority, due_date)
-VALUES ($1, $2, $3, $4, $5);
+-- name: AllTasks :many
+SELECT * FROM task;
 
--- TODO: Check affected rows
--- name: UpdateTask :exec
+-- name: InsertTask :exec
+INSERT INTO task
+  (id, title, description, status, priority, due_date, created_at, updated_at)
+VALUES
+  ($1, $2, $3, $4, $5, $6, $7, $8);
+
+-- name: UpdateTask :execrows
 UPDATE task SET
   title = $2,
   description = $3,
@@ -20,7 +24,7 @@ UPDATE task SET
 WHERE
   task.id = $1 AND task.status != 'done';
 
--- name: DeleteTask :exec
+-- name: DeleteTask :execrows
 DELETE FROM task WHERE task.id = $1;
 
 -- name: DeleteOverdueTasks :exec

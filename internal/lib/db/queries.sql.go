@@ -11,6 +11,39 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const allTasks = `-- name: AllTasks :many
+SELECT id, title, description, status, priority, due_date, created_at, updated_at FROM task
+`
+
+func (q *Queries) AllTasks(ctx context.Context) ([]Task, error) {
+	rows, err := q.db.Query(ctx, allTasks)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Task
+	for rows.Next() {
+		var i Task
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.Description,
+			&i.Status,
+			&i.Priority,
+			&i.DueDate,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const averageTaskCompletionTime = `-- name: AverageTaskCompletionTime :one
 SELECT
     AVG(updated_at - completed_at) AS average_completion_time
@@ -88,35 +121,46 @@ func (q *Queries) DeleteOverdueTasks(ctx context.Context, dueDate pgtype.Date) e
 	return err
 }
 
-const deleteTask = `-- name: DeleteTask :exec
+const deleteTask = `-- name: DeleteTask :execrows
 DELETE FROM task WHERE task.id = $1
 `
 
-func (q *Queries) DeleteTask(ctx context.Context, id pgtype.UUID) error {
-	_, err := q.db.Exec(ctx, deleteTask, id)
-	return err
+func (q *Queries) DeleteTask(ctx context.Context, id pgtype.UUID) (int64, error) {
+	result, err := q.db.Exec(ctx, deleteTask, id)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }
 
 const insertTask = `-- name: InsertTask :exec
-INSERT INTO task (title, description, status, priority, due_date)
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO task
+  (id, title, description, status, priority, due_date, created_at, updated_at)
+VALUES
+  ($1, $2, $3, $4, $5, $6, $7, $8)
 `
 
 type InsertTaskParams struct {
+	ID          pgtype.UUID
 	Title       string
 	Description pgtype.Text
 	Status      TaskStatus
 	Priority    TaskPriority
 	DueDate     pgtype.Date
+	CreatedAt   pgtype.Date
+	UpdatedAt   pgtype.Date
 }
 
 func (q *Queries) InsertTask(ctx context.Context, arg InsertTaskParams) error {
 	_, err := q.db.Exec(ctx, insertTask,
+		arg.ID,
 		arg.Title,
 		arg.Description,
 		arg.Status,
 		arg.Priority,
 		arg.DueDate,
+		arg.CreatedAt,
+		arg.UpdatedAt,
 	)
 	return err
 }
@@ -135,7 +179,7 @@ func (q *Queries) InsertUser(ctx context.Context, arg InsertUserParams) error {
 	return err
 }
 
-const updateTask = `-- name: UpdateTask :exec
+const updateTask = `-- name: UpdateTask :execrows
 UPDATE task SET
   title = $2,
   description = $3,
@@ -156,9 +200,8 @@ type UpdateTaskParams struct {
 	DueDate     pgtype.Date
 }
 
-// TODO: Check affected rows
-func (q *Queries) UpdateTask(ctx context.Context, arg UpdateTaskParams) error {
-	_, err := q.db.Exec(ctx, updateTask,
+func (q *Queries) UpdateTask(ctx context.Context, arg UpdateTaskParams) (int64, error) {
+	result, err := q.db.Exec(ctx, updateTask,
 		arg.ID,
 		arg.Title,
 		arg.Description,
@@ -166,7 +209,10 @@ func (q *Queries) UpdateTask(ctx context.Context, arg UpdateTaskParams) error {
 		arg.Priority,
 		arg.DueDate,
 	)
-	return err
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }
 
 const userById = `-- name: UserById :one
