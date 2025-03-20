@@ -11,11 +11,18 @@ var ErrInvalidStatus = errors.New("invalid status")
 var ErrInvalidPriority = errors.New("invalid priority")
 var ErrTaskNotFound = errors.New("task not found")
 var ErrTaskIsAlreadyDone = errors.New("task is already done")
+var ErrInvalidTasksTitle = errors.New("invalid task title")
+var ErrInvalidDueDate = errors.New("invalid due data")
 
 type Status string
 
 func (s Status) String() string {
 	return string(s)
+}
+
+func (s Status) IsValid() bool {
+	_, ok := statuses[string(s)]
+	return ok
 }
 
 const (
@@ -42,6 +49,11 @@ type Priority string
 
 func (p Priority) String() string {
 	return string(p)
+}
+
+func (p Priority) IsValid() bool {
+	_, ok := priorities[string(p)]
+	return ok
 }
 
 const (
@@ -97,8 +109,20 @@ type TaskParams struct {
 	DueDate     time.Time
 }
 
-func NewTask(params TaskParams) Task {
+func NewTask(params TaskParams) (Task, error) {
 	now := time.Now()
+	if len(params.Title) == 0 {
+		return Task{}, ErrInvalidTasksTitle
+	}
+	if params.DueDate.Before(now) {
+		return Task{}, ErrInvalidDueDate
+	}
+	if !params.Status.IsValid() {
+		return Task{}, ErrInvalidStatus
+	}
+	if !params.Priority.IsValid() {
+		return Task{}, ErrInvalidPriority
+	}
 	return Task{
 		Id:          TaskId(uuid.New()),
 		Title:       params.Title,
@@ -108,7 +132,7 @@ func NewTask(params TaskParams) Task {
 		DueDate:     params.DueDate,
 		CreatedAt:   now,
 		UpdatedAt:   now,
-	}
+	}, nil
 }
 
 type TasksFilter struct {

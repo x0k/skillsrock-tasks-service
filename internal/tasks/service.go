@@ -33,7 +33,10 @@ func NewService(
 }
 
 func (s *Service) CreateTask(ctx context.Context, params TaskParams) *shared.ServiceError {
-	task := NewTask(params)
+	task, err := NewTask(params)
+	if err != nil {
+		return shared.NewServiceError(err, "failed to create task")
+	}
 	if err := s.tasksRepo.SaveTask(ctx, task); err != nil {
 		return shared.NewUnexpectedError(err, "failed to save task")
 	}
