@@ -214,16 +214,20 @@ func (r *Repo) FindTasks(ctx context.Context, f TasksFilter) ([]Task, error) {
 		); err != nil {
 			return nil, err
 		}
-		items = append(items, Task{
-			Id:          i.ID.Bytes,
-			Title:       i.Title,
-			Description: r.descriptionFromPg(i.Description),
-			Status:      Status(i.Status),
-			Priority:    Priority(i.Priority),
-			DueDate:     i.DueDate.Time,
-			CreatedAt:   i.CreatedAt.Time,
-			UpdatedAt:   i.UpdatedAt.Time,
-		})
+		task, err := NewTask(
+			i.ID.Bytes,
+			i.Title,
+			r.descriptionFromPg(i.Description),
+			Status(i.Status),
+			Priority(i.Priority),
+			i.DueDate.Time,
+			i.CreatedAt.Time,
+			i.UpdatedAt.Time,
+		)
+		if err != nil {
+			return nil, err
+		}
+		items = append(items, task)
 	}
 	return items, rows.Err()
 }

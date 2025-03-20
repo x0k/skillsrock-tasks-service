@@ -8,7 +8,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
 	"github.com/x0k/skillrock-tasks-service/internal/lib/logger"
 	"github.com/x0k/skillrock-tasks-service/internal/shared"
@@ -95,12 +94,17 @@ func TestServiceCreateTask(t *testing.T) {
 func TestServiceFindTask(t *testing.T) {
 	var filter tasks.TasksFilter
 	unexpectedErr := errors.New("unexpected error")
-	task, tErr := tasks.NewTask(tasks.TaskParams{
-		Title:    "title",
-		Status:   tasks.Pending,
-		Priority: tasks.Low,
-		DueDate:  time.Now().Add(time.Hour),
-	})
+	now := time.Now()
+	task, tErr := tasks.NewTask(
+		tasks.NewTaskId(),
+		"title",
+		nil,
+		tasks.Pending,
+		tasks.Low,
+		now.Add(time.Hour),
+		now,
+		now,
+	)
 	if tErr != nil {
 		t.Fatal("failed to prepare task")
 	}
@@ -146,10 +150,7 @@ func TestServiceFindTask(t *testing.T) {
 }
 
 func TestServiceUpdateTaskById(t *testing.T) {
-	taskId, tErr := tasks.NewTaskId(uuid.NewString())
-	if tErr != nil {
-		t.Fatal("failed to prepare task id")
-	}
+	taskId := tasks.NewTaskId()
 	params := tasks.TaskParams{
 		Title:    "new title",
 		Status:   tasks.Pending,
@@ -203,10 +204,7 @@ func TestServiceUpdateTaskById(t *testing.T) {
 }
 
 func TestRemoveTaskById(t *testing.T) {
-	taskId, tErr := tasks.NewTaskId(uuid.NewString())
-	if tErr != nil {
-		t.Fatal("failed to prepare task id")
-	}
+	taskId := tasks.NewTaskId()
 	unexpectedErr := errors.New("unexpected err")
 	cases := []struct {
 		name    string
@@ -252,12 +250,17 @@ func TestRemoveTaskById(t *testing.T) {
 }
 
 func TestServiceExportTasks(t *testing.T) {
-	task, tErr := tasks.NewTask(tasks.TaskParams{
-		Title:    "title",
-		Status:   tasks.Pending,
-		Priority: tasks.Low,
-		DueDate:  time.Now().Add(time.Hour),
-	})
+	now := time.Now()
+	task, tErr := tasks.NewTask(
+		tasks.NewTaskId(),
+		"title",
+		nil,
+		tasks.Pending,
+		tasks.Low,
+		now.Add(time.Hour),
+		now,
+		now,
+	)
 	if tErr != nil {
 		t.Fatal("failed to prepare task")
 	}
@@ -303,12 +306,17 @@ func TestServiceExportTasks(t *testing.T) {
 }
 
 func TestServiceImportTasks(t *testing.T) {
-	task, tErr := tasks.NewTask(tasks.TaskParams{
-		Title:    "title",
-		Status:   tasks.Pending,
-		Priority: tasks.Low,
-		DueDate:  time.Now().Add(time.Hour),
-	})
+	now := time.Now()
+	task, tErr := tasks.NewTask(
+		tasks.NewTaskId(),
+		"title",
+		nil,
+		tasks.Pending,
+		tasks.Low,
+		now.Add(time.Hour),
+		now,
+		now,
+	)
 	if tErr != nil {
 		t.Fatal("failed to prepare task")
 	}

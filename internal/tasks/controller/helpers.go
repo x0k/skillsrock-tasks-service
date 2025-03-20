@@ -37,7 +37,7 @@ func (t *Controller) taskParams(c *fiber.Ctx) (tasks.TaskParams, error) {
 }
 
 func (t *Controller) setTaskId(c *fiber.Ctx, out *tasks.TaskId, value string) error {
-	taskId, err := tasks.NewTaskId(value)
+	taskId, err := tasks.ParseTaskId(value)
 	if err != nil {
 		t.log.Debug(c.Context(), "invalid task id value", slog.String("task_id", value))
 		return fiber_adapter.BadRequest(err)
@@ -47,7 +47,7 @@ func (t *Controller) setTaskId(c *fiber.Ctx, out *tasks.TaskId, value string) er
 }
 
 func (t *Controller) setStatus(c *fiber.Ctx, out *tasks.Status, value string) error {
-	status, err := tasks.NewStatus(value)
+	status, err := tasks.ParseStatus(value)
 	if err != nil {
 		t.log.Debug(c.Context(), "invalid status value", slog.String("status", value))
 		return fiber_adapter.BadRequest(err)
@@ -57,7 +57,7 @@ func (t *Controller) setStatus(c *fiber.Ctx, out *tasks.Status, value string) er
 }
 
 func (t *Controller) setPriority(c *fiber.Ctx, out *tasks.Priority, value string) error {
-	priority, err := tasks.NewPriority(value)
+	priority, err := tasks.ParsePriority(value)
 	if err != nil {
 		t.log.Debug(c.Context(), "invalid priority value", slog.String("priority", value))
 		return fiber_adapter.BadRequest(err)

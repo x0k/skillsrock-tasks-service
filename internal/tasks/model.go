@@ -37,7 +37,7 @@ var statuses = map[string]Status{
 	string(Done):       Done,
 }
 
-func NewStatus(st string) (Status, error) {
+func ParseStatus(st string) (Status, error) {
 	s, ok := statuses[st]
 	if !ok {
 		return Pending, ErrInvalidStatus
@@ -68,7 +68,7 @@ var priorities = map[string]Priority{
 	string(High):   High,
 }
 
-func NewPriority(pr string) (Priority, error) {
+func ParsePriority(pr string) (Priority, error) {
 	p, ok := priorities[pr]
 	if !ok {
 		return Low, ErrInvalidPriority
@@ -82,7 +82,11 @@ func (id TaskId) String() string {
 	return uuid.UUID(id).String()
 }
 
-func NewTaskId(id string) (TaskId, error) {
+func NewTaskId() TaskId {
+	return TaskId(uuid.New())
+}
+
+func ParseTaskId(id string) (TaskId, error) {
 	uid, err := uuid.Parse(id)
 	if err != nil {
 		return TaskId(uuid.Nil), err
@@ -109,29 +113,37 @@ type TaskParams struct {
 	DueDate     time.Time
 }
 
-func NewTask(params TaskParams) (Task, error) {
-	now := time.Now()
-	if len(params.Title) == 0 {
+func NewTask(
+	taskId TaskId,
+	title string,
+	description *string,
+	status Status,
+	priority Priority,
+	dueDate time.Time,
+	createdAt time.Time,
+	updatedAt time.Time,
+) (Task, error) {
+	if len(title) == 0 {
 		return Task{}, ErrInvalidTasksTitle
 	}
-	if params.DueDate.Before(now) {
+	if dueDate.Before(createdAt) {
 		return Task{}, ErrInvalidDueDate
 	}
-	if !params.Status.IsValid() {
+	if !status.IsValid() {
 		return Task{}, ErrInvalidStatus
 	}
-	if !params.Priority.IsValid() {
+	if !priority.IsValid() {
 		return Task{}, ErrInvalidPriority
 	}
 	return Task{
-		Id:          TaskId(uuid.New()),
-		Title:       params.Title,
-		Description: params.Description,
-		Status:      params.Status,
-		Priority:    params.Priority,
-		DueDate:     params.DueDate,
-		CreatedAt:   now,
-		UpdatedAt:   now,
+		Id:          taskId,
+		Title:       title,
+		Description: description,
+		Status:      status,
+		Priority:    priority,
+		DueDate:     dueDate,
+		CreatedAt:   createdAt,
+		UpdatedAt:   createdAt,
 	}, nil
 }
 

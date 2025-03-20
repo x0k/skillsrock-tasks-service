@@ -33,7 +33,17 @@ func NewService(
 }
 
 func (s *Service) CreateTask(ctx context.Context, params TaskParams) *shared.ServiceError {
-	task, err := NewTask(params)
+	now := time.Now()
+	task, err := NewTask(
+		NewTaskId(),
+		params.Title,
+		params.Description,
+		params.Status,
+		params.Priority,
+		params.DueDate,
+		now,
+		now,
+	)
 	if err != nil {
 		return shared.NewServiceError(err, "failed to create task")
 	}

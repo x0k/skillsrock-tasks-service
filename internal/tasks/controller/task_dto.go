@@ -37,13 +37,13 @@ func taskFromDTO(dto TaskDTO) (tasks.Task, error) {
 		Description: dto.Description,
 	}
 	var err error
-	if task.Id, err = tasks.NewTaskId(dto.Id); err != nil {
+	if task.Id, err = tasks.ParseTaskId(dto.Id); err != nil {
 		return task, err
 	}
-	if task.Status, err = tasks.NewStatus(dto.Status); err != nil {
+	if task.Status, err = tasks.ParseStatus(dto.Status); err != nil {
 		return task, err
 	}
-	if task.Priority, err = tasks.NewPriority(dto.Priority); err != nil {
+	if task.Priority, err = tasks.ParsePriority(dto.Priority); err != nil {
 		return task, err
 	}
 	if task.DueDate, err = time.Parse(time.DateOnly, dto.DueDate); err != nil {
@@ -55,5 +55,14 @@ func taskFromDTO(dto TaskDTO) (tasks.Task, error) {
 	if task.UpdatedAt, err = time.Parse(time.DateOnly, dto.UpdatedAt); err != nil {
 		return task, err
 	}
-	return task, nil
+	return tasks.NewTask(
+		task.Id,
+		task.Title,
+		task.Description,
+		task.Status,
+		task.Priority,
+		task.DueDate,
+		task.CreatedAt,
+		task.UpdatedAt,
+	)
 }
