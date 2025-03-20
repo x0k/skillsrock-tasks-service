@@ -4,9 +4,12 @@ import (
 	"context"
 	"fmt"
 
+	jwtware "github.com/gofiber/contrib/jwt"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
+	slogfiber "github.com/samber/slog-fiber"
 
 	"github.com/x0k/skillrock-tasks-service/internal/analytics"
 	"github.com/x0k/skillrock-tasks-service/internal/auth"
@@ -43,6 +46,9 @@ func Run(ctx context.Context, cfg *Config, log *logger.Logger) error {
 
 	app := fiber.New()
 
+	app.Use(slogfiber.New(log.Logger))
+	app.Use(recover.New())
+
 	auth.NewController(
 		app.Group("/auth"),
 		log.With(sl.Component("auth_controller")),
@@ -57,12 +63,17 @@ func Run(ctx context.Context, cfg *Config, log *logger.Logger) error {
 		),
 	)
 
+	authMiddleware := jwtware.New(jwtware.Config{
+		SigningKey: jwtware.SigningKey{Key: []byte(cfg.Auth.Secret)},
+	})
+
 	tasksRepo := tasks.NewRepo(
 		log.With(sl.Component("tasks_repo")),
 		pgxPool,
 		queries,
 	)
 	tasksGroup := app.Group("/tasks")
+	tasksGroup.Use(authMiddleware)
 	tasks_controller.New(
 		tasksGroup,
 		log.With(sl.Component("tasks_controller")),
@@ -73,6 +84,7 @@ func Run(ctx context.Context, cfg *Config, log *logger.Logger) error {
 	)
 
 	analyticsGroup := app.Group("/analytics")
+	analyticsGroup.Use(authMiddleware)
 	analytics.NewController(
 		analyticsGroup,
 		log.With(sl.Component("analytics_controller")),
