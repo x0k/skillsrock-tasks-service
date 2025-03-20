@@ -1,0 +1,13 @@
+with-expecter: True
+filename: "mock_{{.InterfaceName}}.go"
+dir: "{{.InterfaceDir}}"
+mockname: "Mock{{.InterfaceName}}"
+outpkg: "{{.PackageName}}"
+inpackage: True
+issue-845-fix: True
+resolve-type-alias: False
+disable-version-string: True
+packages:
+  github.com/x0k/skillrock-tasks-service/internal/tasks:
+    interfaces:
+      TasksRepo:

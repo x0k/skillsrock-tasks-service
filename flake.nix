@@ -13,8 +13,42 @@
     }:
     let
       system = "x86_64-linux";
+      lib = nixpkgs.lib;
       pkgs = import nixpkgs { inherit system; };
       unstablePkgs = import nixpkgsUnstable { inherit system; };
+      buildGoModule = pkgs.buildGoModule.override {
+        go = unstablePkgs.go_1_24;
+      };
+      mockery = buildGoModule rec {
+        pname = "mockery";
+        version = "2.53.3";
+
+        src = pkgs.fetchFromGitHub {
+          owner = "vektra";
+          repo = "mockery";
+          rev = "v${version}";
+          sha256 = "sha256-X0cHpv4o6pzgjg7+ULCuFkspeff95WFtJbVHqy4LxAg=";
+        };
+
+        preCheck = ''
+          substituteInPlace ./pkg/generator_test.go --replace-fail 0.0.0-dev ${version}
+          substituteInPlace ./pkg/logging/logging_test.go --replace-fail v0.0 v${lib.versions.majorMinor version}
+        '';
+
+        ldflags = [
+          "-s"
+          "-w"
+          "-X"
+          "github.com/vektra/mockery/v2/pkg/logging.SemVer=v${version}"
+        ];
+
+        # env.CGO_ENABLED = false;
+
+        proxyVendor = true;
+        vendorHash = "sha256-AQY4x2bLqMwHIjoKHzEm1hebR29gRs3LJN8i00Uup5o=";
+
+        subPackages = [ "." ];
+      };
     in
     {
       devShells.${system} = {
@@ -22,8 +56,8 @@
           buildInputs = [
             mk.packages.${system}.default
             unstablePkgs.go_1_24
+            mockery
             pkgs.go-migrate
-            pkgs.go-mockery
             pkgs.golangci-lint
             pkgs.gotests
             pkgs.sqlc
