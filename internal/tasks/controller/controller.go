@@ -27,7 +27,7 @@ type Controller struct {
 	tasksService TasksService
 }
 
-func NewController(
+func New(
 	log *logger.Logger,
 	tasksService TasksService,
 ) *Controller {

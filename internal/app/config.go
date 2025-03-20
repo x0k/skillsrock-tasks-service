@@ -18,8 +18,12 @@ type PgConfig struct {
 	MigrationsURI string `env:"PG_MIGRATIONS_URI" env-default:"file://db/migrations"`
 }
 
+type RedisConfig struct {
+	ConnectionURI string `env:"REDIS_CONNECTION_URI" env-required:"true"`
+}
+
 type ServerConfig struct {
-	Address string `env:"SERVER_ADDRESS" env-default:"0.0.0.0:8080"`
+	Address string `yaml:"address" env:"SERVER_ADDRESS" env-default:"0.0.0.0:8080"`
 }
 
 type AuthConfig struct {
@@ -28,10 +32,11 @@ type AuthConfig struct {
 }
 
 type Config struct {
-	Logger   LoggerConfig
-	Postgres PgConfig
-	Server   ServerConfig
-	Auth     AuthConfig
+	Logger   LoggerConfig `yaml:"logger"`
+	Postgres PgConfig     `yaml:"postgres"`
+	Redis    RedisConfig  `yaml:"redis"`
+	Server   ServerConfig `yaml:"server"`
+	Auth     AuthConfig   `yaml:"auth"`
 }
 
 func MustLoadConfig(configPath string) *Config {
