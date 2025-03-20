@@ -19,3 +19,10 @@ CREATE TABLE
     created_at DATE NOT NULL DEFAULT CURRENT_DATE,
     updated_at DATE NOT NULL DEFAULT CURRENT_DATE
   );
+
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
+CREATE INDEX idx_task_title ON task USING gin (title gin_trgm_ops);
+CREATE INDEX idx_task_status ON task (status);
+CREATE INDEX idx_task_priority ON task (priority);
+CREATE INDEX idx_task_due_date ON task (due_date);

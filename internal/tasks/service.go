@@ -16,6 +16,7 @@ type TasksRepo interface {
 	UpdateTaskById(ctx context.Context, id TaskId, params TaskParams) error
 	RemoveTaskById(ctx context.Context, id TaskId) error
 	SaveTasks(ctx context.Context, tasks []Task) error
+	AllTasks(ctx context.Context) ([]Task, error)
 	RemoveOverdueTasksWithDueDateBefore(ctx context.Context, date time.Time) error
 }
 
@@ -87,7 +88,7 @@ func (s *Service) RemoveTaskById(ctx context.Context, id TaskId) *shared.Service
 }
 
 func (s *Service) ExportTasks(ctx context.Context) ([]Task, *shared.ServiceError) {
-	if tasks, err := s.tasksRepo.FindTasks(ctx, TasksFilter{}); err != nil {
+	if tasks, err := s.tasksRepo.AllTasks(ctx); err != nil {
 		return tasks, shared.NewUnexpectedError(err, "failed to load tasks")
 	} else {
 		return tasks, nil

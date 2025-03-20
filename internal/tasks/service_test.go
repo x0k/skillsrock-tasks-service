@@ -274,14 +274,14 @@ func TestServiceExportTasks(t *testing.T) {
 		{
 			name: "happy path",
 			service: newTestService(t, func(repo *tasks.MockTasksRepo) {
-				repo.EXPECT().FindTasks(mock.Anything, tasks.TasksFilter{}).Return([]tasks.Task{task}, nil)
+				repo.EXPECT().AllTasks(mock.Anything).Return([]tasks.Task{task}, nil)
 			}),
 			tasks: []tasks.Task{task},
 		},
 		{
 			name: "unexpected error",
 			service: newTestService(t, func(repo *tasks.MockTasksRepo) {
-				repo.EXPECT().FindTasks(mock.Anything, mock.Anything).Return(nil, unexpectedErr)
+				repo.EXPECT().AllTasks(mock.Anything).Return(nil, unexpectedErr)
 			}),
 			err: shared.NewUnexpectedError(unexpectedErr, ""),
 		},

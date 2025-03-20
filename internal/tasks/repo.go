@@ -164,7 +164,7 @@ func (r *Repo) FindTasks(ctx context.Context, f TasksFilter) ([]Task, error) {
 		if f.Title != nil {
 			prepare()
 			q.WriteString("title ILIKE ")
-			push(*f.Title)
+			push("%" + *f.Title + "%")
 		}
 		if f.Status != nil {
 			prepare()
@@ -178,7 +178,7 @@ func (r *Repo) FindTasks(ctx context.Context, f TasksFilter) ([]Task, error) {
 		}
 		if f.DueAfter != nil {
 			prepare()
-			q.WriteString("due_date >= ")
+			q.WriteString("due_date > ")
 			push(pgtype.Date{
 				Time:  *f.DueAfter,
 				Valid: true,
@@ -201,28 +201,28 @@ func (r *Repo) FindTasks(ctx context.Context, f TasksFilter) ([]Task, error) {
 	defer rows.Close()
 	var items []Task
 	for rows.Next() {
-		var i db.Task
+		var row db.Task
 		if err := rows.Scan(
-			&i.ID,
-			&i.Title,
-			&i.Description,
-			&i.Status,
-			&i.Priority,
-			&i.DueDate,
-			&i.CreatedAt,
-			&i.UpdatedAt,
+			&row.ID,
+			&row.Title,
+			&row.Description,
+			&row.Status,
+			&row.Priority,
+			&row.DueDate,
+			&row.CreatedAt,
+			&row.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}
 		task, err := NewTask(
-			i.ID.Bytes,
-			i.Title,
-			r.descriptionFromPg(i.Description),
-			Status(i.Status),
-			Priority(i.Priority),
-			i.DueDate.Time,
-			i.CreatedAt.Time,
-			i.UpdatedAt.Time,
+			row.ID.Bytes,
+			row.Title,
+			r.descriptionFromPg(row.Description),
+			Status(row.Status),
+			Priority(row.Priority),
+			row.DueDate.Time,
+			row.CreatedAt.Time,
+			row.UpdatedAt.Time,
 		)
 		if err != nil {
 			return nil, err
@@ -230,6 +230,29 @@ func (r *Repo) FindTasks(ctx context.Context, f TasksFilter) ([]Task, error) {
 		items = append(items, task)
 	}
 	return items, rows.Err()
+}
+
+func (r *Repo) AllTasks(ctx context.Context) ([]Task, error) {
+	rows, err := r.queries.AllTasks(ctx)
+	if err != nil {
+		return nil, err
+	}
+	tasks := make([]Task, len(rows))
+	for i, row := range rows {
+		if tasks[i], err = NewTask(
+			row.ID.Bytes,
+			row.Title,
+			r.descriptionFromPg(row.Description),
+			Status(row.Status),
+			Priority(row.Priority),
+			row.DueDate.Time,
+			row.CreatedAt.Time,
+			row.UpdatedAt.Time,
+		); err != nil {
+			return nil, err
+		}
+	}
+	return tasks, nil
 }
 
 func (r *Repo) TasksCountByStatus(ctx context.Context) (map[Status]int64, error) {

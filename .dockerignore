@@ -1,6 +1,7 @@
 .direnv/
 api/
 deployments/
+bin/
 
 .env
 .envrc

@@ -1,6 +1,7 @@
 package tasks_controller
 
 import (
+	"fmt"
 	"log/slog"
 
 	"github.com/gofiber/fiber/v2"
@@ -16,26 +17,35 @@ func (t *Controller) findTasks(c *fiber.Ctx) error {
 	}
 	status := c.Query("status")
 	if status != "" {
-		if err := t.setStatus(c, filter.Status, status); err != nil {
+		fmt.Println(filter.Status)
+		if s, err := t.status(c, status); err != nil {
 			return err
+		} else {
+			filter.Status = &s
 		}
 	}
 	priority := c.Query("priority")
 	if priority != "" {
-		if err := t.setPriority(c, filter.Priority, priority); err != nil {
+		if p, err := t.priority(c, priority); err != nil {
 			return err
+		} else {
+			filter.Priority = &p
 		}
 	}
 	dueBefore := c.Query("due_before")
 	if dueBefore != "" {
-		if err := t.setDate(c, filter.DueBefore, dueBefore); err != nil {
+		if d, err := t.date(c, dueBefore); err != nil {
 			return err
+		} else {
+			filter.DueBefore = &d
 		}
 	}
 	dueAfter := c.Query("due_after")
 	if dueAfter != "" {
-		if err := t.setDate(c, filter.DueAfter, dueAfter); err != nil {
+		if d, err := t.date(c, dueAfter); err != nil {
 			return err
+		} else {
+			filter.DueAfter = &d
 		}
 	}
 	tasks, err := t.tasksService.FindTasks(c.Context(), filter)

@@ -24,54 +24,51 @@ func (t *Controller) taskParams(c *fiber.Ctx) (tasks.TaskParams, error) {
 		Title:       dto.Title,
 		Description: dto.Description,
 	}
-	if err := t.setStatus(c, &params.Status, dto.Status); err != nil {
+	var err error
+	if params.Status, err = t.status(c, dto.Status); err != nil {
 		return params, err
 	}
-	if err := t.setPriority(c, &params.Priority, dto.Priority); err != nil {
+	if params.Priority, err = t.priority(c, dto.Priority); err != nil {
 		return params, err
 	}
-	if err := t.setDate(c, &params.DueDate, dto.DueDate); err != nil {
+	if params.DueDate, err = t.date(c, dto.DueDate); err != nil {
 		return params, err
 	}
 	return params, nil
 }
 
-func (t *Controller) setTaskId(c *fiber.Ctx, out *tasks.TaskId, value string) error {
+func (t *Controller) taskId(c *fiber.Ctx, value string) (tasks.TaskId, error) {
 	taskId, err := tasks.ParseTaskId(value)
 	if err != nil {
 		t.log.Debug(c.Context(), "invalid task id value", slog.String("task_id", value))
-		return fiber_adapter.BadRequest(err)
+		return taskId, fiber_adapter.BadRequest(err)
 	}
-	*out = taskId
-	return nil
+	return taskId, nil
 }
 
-func (t *Controller) setStatus(c *fiber.Ctx, out *tasks.Status, value string) error {
+func (t *Controller) status(c *fiber.Ctx, value string) (tasks.Status, error) {
 	status, err := tasks.ParseStatus(value)
 	if err != nil {
 		t.log.Debug(c.Context(), "invalid status value", slog.String("status", value))
-		return fiber_adapter.BadRequest(err)
+		return status, fiber_adapter.BadRequest(err)
 	}
-	*out = status
-	return nil
+	return status, nil
 }
 
-func (t *Controller) setPriority(c *fiber.Ctx, out *tasks.Priority, value string) error {
+func (t *Controller) priority(c *fiber.Ctx, value string) (tasks.Priority, error) {
 	priority, err := tasks.ParsePriority(value)
 	if err != nil {
 		t.log.Debug(c.Context(), "invalid priority value", slog.String("priority", value))
-		return fiber_adapter.BadRequest(err)
+		return priority, fiber_adapter.BadRequest(err)
 	}
-	*out = priority
-	return nil
+	return priority, nil
 }
 
-func (t *Controller) setDate(c *fiber.Ctx, out *time.Time, value string) error {
+func (t *Controller) date(c *fiber.Ctx, value string) (time.Time, error) {
 	date, err := time.Parse(time.DateOnly, value)
 	if err != nil {
 		t.log.Debug(c.Context(), "invalid date value", slog.String("date", value))
-		return fiber_adapter.BadRequest(err)
+		return date, fiber_adapter.BadRequest(err)
 	}
-	*out = date
-	return nil
+	return date, nil
 }

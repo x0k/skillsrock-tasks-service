@@ -22,6 +22,64 @@ func (_m *MockTasksRepo) EXPECT() *MockTasksRepo_Expecter {
 	return &MockTasksRepo_Expecter{mock: &_m.Mock}
 }
 
+// AllTasks provides a mock function with given fields: ctx
+func (_m *MockTasksRepo) AllTasks(ctx context.Context) ([]Task, error) {
+	ret := _m.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for AllTasks")
+	}
+
+	var r0 []Task
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context) ([]Task, error)); ok {
+		return rf(ctx)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context) []Task); ok {
+		r0 = rf(ctx)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]Task)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MockTasksRepo_AllTasks_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'AllTasks'
+type MockTasksRepo_AllTasks_Call struct {
+	*mock.Call
+}
+
+// AllTasks is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *MockTasksRepo_Expecter) AllTasks(ctx interface{}) *MockTasksRepo_AllTasks_Call {
+	return &MockTasksRepo_AllTasks_Call{Call: _e.mock.On("AllTasks", ctx)}
+}
+
+func (_c *MockTasksRepo_AllTasks_Call) Run(run func(ctx context.Context)) *MockTasksRepo_AllTasks_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context))
+	})
+	return _c
+}
+
+func (_c *MockTasksRepo_AllTasks_Call) Return(_a0 []Task, _a1 error) *MockTasksRepo_AllTasks_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockTasksRepo_AllTasks_Call) RunAndReturn(run func(context.Context) ([]Task, error)) *MockTasksRepo_AllTasks_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // FindTasks provides a mock function with given fields: ctx, filter
 func (_m *MockTasksRepo) FindTasks(ctx context.Context, filter TasksFilter) ([]Task, error) {
 	ret := _m.Called(ctx, filter)

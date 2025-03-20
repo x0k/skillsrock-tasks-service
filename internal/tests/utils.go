@@ -56,6 +56,13 @@ func setupPgxPool(t testing.TB, log *slog.Logger) *pgxpool.Pool {
 	return conn
 }
 
+func execSql(t *testing.T, pool *pgxpool.Pool, sql string) {
+	_, err := pool.Exec(t.Context(), sql)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
 func setupRedisClient(t testing.TB, log *slog.Logger) *redis.Client {
 	redisContainer, err := tRedis.Run(
 		t.Context(),

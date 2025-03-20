@@ -5,12 +5,11 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	fiber_adapter "github.com/x0k/skillrock-tasks-service/internal/adapters/fiber"
-	"github.com/x0k/skillrock-tasks-service/internal/tasks"
 )
 
 func (t *Controller) updateTaskById(c *fiber.Ctx) error {
-	var taskId tasks.TaskId
-	if err := t.setTaskId(c, &taskId, c.Params("id")); err != nil {
+	taskId, err := t.taskId(c, c.Params("id"))
+	if err != nil {
 		return err
 	}
 	params, err := t.taskParams(c)
