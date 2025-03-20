@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"errors"
 
 	"github.com/gofiber/fiber/v2"
 	fiber_adapter "github.com/x0k/skillrock-tasks-service/internal/adapters/fiber"
@@ -42,18 +43,6 @@ type Tokens struct {
 }
 
 func (ac *Controller) register(c *fiber.Ctx) error {
-	return ac.handleAccess(c, func(credentials Credentials) (string, *shared.ServiceError) {
-		return ac.authService.Register(c.Context(), credentials.Login, credentials.Password)
-	})
-}
-
-func (ac *Controller) login(c *fiber.Ctx) error {
-	return ac.handleAccess(c, func(credentials Credentials) (string, *shared.ServiceError) {
-		return ac.authService.Login(c.Context(), credentials.Login, credentials.Password)
-	})
-}
-
-func (ac *Controller) handleAccess(c *fiber.Ctx, handle func(Credentials) (string, *shared.ServiceError)) error {
 	var credentials Credentials
 	if err := c.BodyParser(&credentials); err != nil {
 		ac.log.Debug(c.Context(), "failed to decode credentials")
@@ -63,9 +52,35 @@ func (ac *Controller) handleAccess(c *fiber.Ctx, handle func(Credentials) (strin
 		ac.log.Debug(c.Context(), "invalid credentials struct")
 		return fiber_adapter.BadRequest(err)
 	}
-	accessToken, sErr := handle(credentials)
+	accessToken, sErr := ac.authService.Register(c.Context(), credentials.Login, credentials.Password)
 	if sErr != nil {
 		ac.log.Debug(c.Context(), sErr.Msg, sl.Err(sErr.Err))
+		if errors.Is(sErr.Err, ErrLoginIsTaken) {
+			return fiber_adapter.SpecificServiceError(sErr, fiber.StatusConflict)
+		}
+		return fiber_adapter.ServiceError(sErr)
+	}
+	return c.Status(fiber.StatusCreated).JSON(Tokens{
+		AccessToken: accessToken,
+	})
+}
+
+func (ac *Controller) login(c *fiber.Ctx) error {
+	var credentials Credentials
+	if err := c.BodyParser(&credentials); err != nil {
+		ac.log.Debug(c.Context(), "failed to decode credentials")
+		return err
+	}
+	if err := validator_adapter.ValidateStruct(&credentials); err != nil {
+		ac.log.Debug(c.Context(), "invalid credentials struct")
+		return fiber_adapter.BadRequest(err)
+	}
+	accessToken, sErr := ac.authService.Login(c.Context(), credentials.Login, credentials.Password)
+	if sErr != nil {
+		ac.log.Debug(c.Context(), sErr.Msg, sl.Err(sErr.Err))
+		if errors.Is(sErr.Err, ErrUserNotFound) || errors.Is(sErr.Err, ErrPasswordsMismatch) {
+			return fiber_adapter.SpecificServiceError(sErr, fiber.StatusUnauthorized)
+		}
 		return fiber_adapter.ServiceError(sErr)
 	}
 	return c.JSON(Tokens{

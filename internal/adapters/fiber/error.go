@@ -15,7 +15,7 @@ func BadRequest(err error) error {
 func ServiceError(err *shared.ServiceError) error {
 	if err.Expected {
 		return &fiber.Error{
-			Code:    fiber.ErrBadRequest.Code,
+			Code:    fiber.StatusBadRequest,
 			Message: err.Msg,
 		}
 	} else {
@@ -23,5 +23,12 @@ func ServiceError(err *shared.ServiceError) error {
 			Code:    fiber.StatusInternalServerError,
 			Message: err.Msg,
 		}
+	}
+}
+
+func SpecificServiceError(err *shared.ServiceError, code int) error {
+	return &fiber.Error{
+		Code:    code,
+		Message: err.Msg,
 	}
 }

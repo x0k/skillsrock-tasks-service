@@ -50,6 +50,11 @@ func Run(ctx context.Context, cfg *Config, log *logger.Logger) error {
 		return fmt.Errorf("parse redis url: %w", err)
 	}
 	redisClient := redis.NewClient(redisOpts)
+	defer func() {
+		if err := redisClient.Close(); err != nil {
+			log.Error(ctx, "failed to close redis client", sl.Err(err))
+		}
+	}()
 
 	app := fiber.New()
 

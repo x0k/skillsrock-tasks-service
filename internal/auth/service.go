@@ -53,7 +53,7 @@ func (s *Service) Login(ctx context.Context, login string, password string) (str
 	}
 	if err := bcrypt.CompareHashAndPassword(user.PasswordHash, []byte(password)); err != nil {
 		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
-			return "", shared.NewServiceError(err, "failed to login")
+			return "", shared.NewServiceError(ErrPasswordsMismatch, "failed to login")
 		}
 		return "", shared.NewUnexpectedError(err, "failed to login")
 	}
