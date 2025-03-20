@@ -4,6 +4,7 @@ import (
 	"context"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -225,6 +226,30 @@ func (r *Repo) FindTasks(ctx context.Context, f TasksFilter) ([]Task, error) {
 		})
 	}
 	return items, rows.Err()
+}
+
+func (r *Repo) TasksCountByStatus(ctx context.Context) (map[Status]int64, error) {
+	rows, err := r.queries.CountTasksByStatus(ctx)
+	if err != nil {
+		return nil, err
+	}
+	m := make(map[Status]int64, len(rows))
+	for _, r := range rows {
+		m[Status(r.Status)] = r.TasksCount
+	}
+	return m, nil
+}
+
+func (r *Repo) AverageCompletionTime(ctx context.Context) (float64, error) {
+	return r.queries.AverageTaskCompletionTime(ctx)
+}
+
+func (r *Repo) CountCompletedAndOverdueTasks(ctx context.Context, duration time.Duration) (int64, int64, error) {
+	row, err := r.queries.CountCompletedAndOverdueTasks(ctx, pgtype.Date{
+		Time:  time.Now().Add(-duration),
+		Valid: true,
+	})
+	return row.CompletedCount, row.OverdueCount, err
 }
 
 func (r *Repo) descriptionToPg(d *string) pgtype.Text {
