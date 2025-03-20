@@ -8,7 +8,7 @@ import (
 	"github.com/x0k/skillrock-tasks-service/internal/tasks"
 )
 
-func (t *Controller) UpdateTaskById(c *fiber.Ctx) error {
+func (t *Controller) updateTaskById(c *fiber.Ctx) error {
 	var taskId tasks.TaskId
 	if err := t.setTaskId(c, &taskId, c.Params("id")); err != nil {
 		return err

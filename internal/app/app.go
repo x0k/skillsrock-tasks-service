@@ -43,7 +43,8 @@ func Run(ctx context.Context, cfg *Config, log *logger.Logger) error {
 
 	app := fiber.New()
 
-	authController := auth.NewController(
+	auth.NewController(
+		app.Group("/auth"),
 		log.With(sl.Component("auth_controller")),
 		auth.NewService(
 			log.With(sl.Component("auth_service")),
@@ -55,31 +56,25 @@ func Run(ctx context.Context, cfg *Config, log *logger.Logger) error {
 			),
 		),
 	)
-	authGroup := app.Group("/auth")
-	authGroup.Post("/register", authController.Register)
-	authGroup.Post("/login", authController.Login)
 
 	tasksRepo := tasks.NewRepo(
 		log.With(sl.Component("tasks_repo")),
 		pgxPool,
 		queries,
 	)
-	tasksController := tasks_controller.New(
+	tasksGroup := app.Group("/tasks")
+	tasks_controller.New(
+		tasksGroup,
 		log.With(sl.Component("tasks_controller")),
 		tasks.NewService(
 			log.With(sl.Component("tasks_service")),
 			tasksRepo,
 		),
 	)
-	tasksGroup := app.Group("/tasks")
-	tasksGroup.Get("/", tasksController.FindTasks)
-	tasksGroup.Post("/", tasksController.CreateTask)
-	tasksGroup.Put("/:id", tasksController.UpdateTaskById)
-	tasksGroup.Delete("/:id", tasksController.RemoveTaskById)
-	tasksGroup.Post("/import", tasksController.ImportTasks)
-	tasksGroup.Get("/export", tasksController.ExportTasks)
 
-	analyticsController := analytics.NewController(
+	analyticsGroup := app.Group("/analytics")
+	analytics.NewController(
+		analyticsGroup,
 		log.With(sl.Component("analytics_controller")),
 		analytics.NewService(
 			log.With(sl.Component("analytics_service")),
@@ -90,8 +85,6 @@ func Run(ctx context.Context, cfg *Config, log *logger.Logger) error {
 			),
 		),
 	)
-	analyticsGroup := app.Group("/analytics")
-	analyticsGroup.Get("/", analyticsController.Report)
 
 	return app.Listen(cfg.Server.Address)
 }

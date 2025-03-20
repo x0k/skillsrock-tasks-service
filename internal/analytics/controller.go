@@ -22,10 +22,13 @@ type Controller struct {
 }
 
 func NewController(
+	router fiber.Router,
 	log *logger.Logger,
 	analyticsService AnalyticsService,
 ) *Controller {
-	return &Controller{log, analyticsService}
+	c := &Controller{log, analyticsService}
+	router.Get("/", c.report)
+	return c
 }
 
 func (a *Controller) GenerateReport(ctx context.Context) {
@@ -54,7 +57,7 @@ func reportToDTO(r Report) ReportDTO {
 	}
 }
 
-func (a *Controller) Report(c *fiber.Ctx) error {
+func (a *Controller) report(c *fiber.Ctx) error {
 	r, err := a.analyticsService.Report(c.Context())
 	if err != nil {
 		a.log.Debug(c.Context(), "failed to load report")

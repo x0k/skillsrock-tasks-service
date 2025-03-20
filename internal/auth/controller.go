@@ -21,8 +21,15 @@ type Controller struct {
 	authService UsersService
 }
 
-func NewController(log *logger.Logger, service UsersService) *Controller {
-	return &Controller{log, service}
+func NewController(
+	router fiber.Router,
+	log *logger.Logger,
+	service UsersService,
+) *Controller {
+	c := &Controller{log, service}
+	router.Post("/register", c.register)
+	router.Post("/login", c.login)
+	return c
 }
 
 type Credentials struct {
@@ -34,13 +41,13 @@ type Tokens struct {
 	AccessToken string `json:"access_token"`
 }
 
-func (ac *Controller) Register(c *fiber.Ctx) error {
+func (ac *Controller) register(c *fiber.Ctx) error {
 	return ac.handleAccess(c, func(credentials Credentials) (string, *shared.ServiceError) {
 		return ac.authService.Register(c.Context(), credentials.Login, credentials.Password)
 	})
 }
 
-func (ac *Controller) Login(c *fiber.Ctx) error {
+func (ac *Controller) login(c *fiber.Ctx) error {
 	return ac.handleAccess(c, func(credentials Credentials) (string, *shared.ServiceError) {
 		return ac.authService.Login(c.Context(), credentials.Login, credentials.Password)
 	})

@@ -9,7 +9,7 @@ import (
 	"github.com/x0k/skillrock-tasks-service/internal/tasks"
 )
 
-func (t *Controller) ImportTasks(c *fiber.Ctx) error {
+func (t *Controller) importTasks(c *fiber.Ctx) error {
 	var dto []TaskDTO
 	if err := c.BodyParser(&dto); err != nil {
 		t.log.Debug(c.Context(), "failed to decode body")

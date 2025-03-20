@@ -15,7 +15,7 @@ type CreateTaskDTO struct {
 	DueDate     string  `json:"due_date" validate:"required"`
 }
 
-func (t *Controller) CreateTask(c *fiber.Ctx) error {
+func (t *Controller) createTask(c *fiber.Ctx) error {
 	params, err := t.taskParams(c)
 	if err != nil {
 		return err

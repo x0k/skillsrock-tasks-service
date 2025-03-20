@@ -5,7 +5,7 @@ import (
 	fiber_adapter "github.com/x0k/skillrock-tasks-service/internal/adapters/fiber"
 )
 
-func (t *Controller) ExportTasks(c *fiber.Ctx) error {
+func (t *Controller) exportTasks(c *fiber.Ctx) error {
 	tasks, err := t.tasksService.ExportTasks(c.Context())
 	if err != nil {
 		t.log.Debug(c.Context(), "failed to export tasks")

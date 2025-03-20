@@ -8,7 +8,7 @@ import (
 	"github.com/x0k/skillrock-tasks-service/internal/tasks"
 )
 
-func (t *Controller) FindTasks(c *fiber.Ctx) error {
+func (t *Controller) findTasks(c *fiber.Ctx) error {
 	var filter tasks.TasksFilter
 	title := c.Query("title")
 	if title != "" {
