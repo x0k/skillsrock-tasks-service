@@ -1,18 +1,18 @@
-package users
+package auth
 
 import "errors"
 
 var ErrLoginIsTaken = errors.New("this login is already taken")
 var ErrUserNotFound = errors.New("user not found")
 
-type user struct {
+type User struct {
 	Login        string
 	PasswordHash []byte
 }
 
-func newUser(
+func NewUser(
 	login string,
 	passwordHash []byte,
-) *user {
-	return &user{login, passwordHash}
+) *User {
+	return &User{login, passwordHash}
 }

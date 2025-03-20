@@ -1,4 +1,4 @@
-package users
+package auth
 
 import (
 	"context"
@@ -16,13 +16,13 @@ type UsersService interface {
 	Login(ctx context.Context, username string, password string) (string, *shared.ServiceError)
 }
 
-type authController struct {
+type Controller struct {
 	log         *logger.Logger
 	authService UsersService
 }
 
-func newAuthController(log *logger.Logger, service UsersService) *authController {
-	return &authController{log, service}
+func NewController(log *logger.Logger, service UsersService) *Controller {
+	return &Controller{log, service}
 }
 
 type Credentials struct {
@@ -34,19 +34,19 @@ type Tokens struct {
 	AccessToken string `json:"access_token"`
 }
 
-func (ac *authController) Register(c *fiber.Ctx) error {
+func (ac *Controller) Register(c *fiber.Ctx) error {
 	return ac.handleAccess(c, func(credentials Credentials) (string, *shared.ServiceError) {
 		return ac.authService.Register(c.Context(), credentials.Login, credentials.Password)
 	})
 }
 
-func (ac *authController) Login(c *fiber.Ctx) error {
+func (ac *Controller) Login(c *fiber.Ctx) error {
 	return ac.handleAccess(c, func(credentials Credentials) (string, *shared.ServiceError) {
 		return ac.authService.Login(c.Context(), credentials.Login, credentials.Password)
 	})
 }
 
-func (ac *authController) handleAccess(c *fiber.Ctx, handle func(Credentials) (string, *shared.ServiceError)) error {
+func (ac *Controller) handleAccess(c *fiber.Ctx, handle func(Credentials) (string, *shared.ServiceError)) error {
 	var credentials Credentials
 	if err := c.BodyParser(&credentials); err != nil {
 		ac.log.Debug(c.Context(), "failed to decode credentials")

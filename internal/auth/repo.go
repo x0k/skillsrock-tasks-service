@@ -1,4 +1,4 @@
-package users
+package auth
 
 import (
 	"context"
@@ -10,16 +10,16 @@ import (
 	"github.com/x0k/skillrock-tasks-service/internal/lib/logger"
 )
 
-type repo struct {
+type Repo struct {
 	log     *logger.Logger
 	queries *db.Queries
 }
 
-func newRepo(log *logger.Logger, queries *db.Queries) *repo {
-	return &repo{log, queries}
+func NewRepo(log *logger.Logger, queries *db.Queries) *Repo {
+	return &Repo{log, queries}
 }
 
-func (r *repo) SaveUser(ctx context.Context, user *user) error {
+func (r *Repo) SaveUser(ctx context.Context, user *User) error {
 	if err := r.queries.InsertUser(ctx, db.InsertUserParams{
 		Login:        user.Login,
 		PasswordHash: user.PasswordHash,
@@ -33,7 +33,7 @@ func (r *repo) SaveUser(ctx context.Context, user *user) error {
 	return nil
 }
 
-func (r *repo) UserByLogin(ctx context.Context, login string) (*user, error) {
+func (r *Repo) UserByLogin(ctx context.Context, login string) (*User, error) {
 	u, err := r.queries.UserById(ctx, login)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -41,5 +41,5 @@ func (r *repo) UserByLogin(ctx context.Context, login string) (*user, error) {
 		}
 		return nil, err
 	}
-	return newUser(login, u.PasswordHash), nil
+	return NewUser(login, u.PasswordHash), nil
 }
