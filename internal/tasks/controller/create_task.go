@@ -1,10 +1,9 @@
 package tasks_controller
 
 import (
-	"log/slog"
-
 	"github.com/gofiber/fiber/v2"
 	fiber_adapter "github.com/x0k/skillrock-tasks-service/internal/adapters/fiber"
+	logger_adapter "github.com/x0k/skillrock-tasks-service/internal/adapters/logger"
 )
 
 type CreateTaskDTO struct {
@@ -21,7 +20,7 @@ func (t *Controller) createTask(c *fiber.Ctx) error {
 		return err
 	}
 	if err := t.tasksService.CreateTask(c.Context(), params); err != nil {
-		t.log.Debug(c.Context(), "failed to create task", slog.Any("task_params", params))
+		logger_adapter.LogServiceError(t.log, c, err)
 		return fiber_adapter.ServiceError(err)
 	}
 	return c.SendStatus(fiber.StatusCreated)

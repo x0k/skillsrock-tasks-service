@@ -12,7 +12,8 @@ var ErrInvalidPriority = errors.New("invalid priority")
 var ErrTaskNotFound = errors.New("task not found")
 var ErrTaskIsAlreadyDone = errors.New("task is already done")
 var ErrInvalidTasksTitle = errors.New("invalid task title")
-var ErrInvalidDueDate = errors.New("invalid due data")
+var ErrInvalidDueDate = errors.New("invalid due date")
+var ErrTaskIdsConflict = errors.New("task ids conflict")
 
 type Status string
 

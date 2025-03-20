@@ -3,7 +3,6 @@ package tasks_controller
 import (
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/x0k/skillrock-tasks-service/internal/tasks"
 )
 
@@ -20,7 +19,7 @@ type TaskDTO struct {
 
 func taskToDTO(task tasks.Task) TaskDTO {
 	return TaskDTO{
-		Id:          uuid.UUID(task.Id).String(),
+		Id:          task.Id.String(),
 		Title:       task.Title,
 		Description: task.Description,
 		Status:      task.Status.String(),

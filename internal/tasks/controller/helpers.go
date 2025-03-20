@@ -7,6 +7,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	fiber_adapter "github.com/x0k/skillrock-tasks-service/internal/adapters/fiber"
 	validator_adapter "github.com/x0k/skillrock-tasks-service/internal/adapters/validator"
+	"github.com/x0k/skillrock-tasks-service/internal/lib/logger/sl"
 	"github.com/x0k/skillrock-tasks-service/internal/tasks"
 )
 
@@ -17,7 +18,7 @@ func (t *Controller) taskParams(c *fiber.Ctx) (tasks.TaskParams, error) {
 		return tasks.TaskParams{}, err
 	}
 	if err := validator_adapter.ValidateStruct(&dto); err != nil {
-		t.log.Debug(c.Context(), "invalid create task dto struct")
+		t.log.Debug(c.Context(), "invalid create task dto struct", sl.Err(err))
 		return tasks.TaskParams{}, fiber_adapter.BadRequest(err)
 	}
 	params := tasks.TaskParams{

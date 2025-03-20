@@ -2,10 +2,10 @@ package tasks_controller
 
 import (
 	"fmt"
-	"log/slog"
 
 	"github.com/gofiber/fiber/v2"
 	fiber_adapter "github.com/x0k/skillrock-tasks-service/internal/adapters/fiber"
+	logger_adapter "github.com/x0k/skillrock-tasks-service/internal/adapters/logger"
 	"github.com/x0k/skillrock-tasks-service/internal/tasks"
 )
 
@@ -50,7 +50,7 @@ func (t *Controller) findTasks(c *fiber.Ctx) error {
 	}
 	tasks, err := t.tasksService.FindTasks(c.Context(), filter)
 	if err != nil {
-		t.log.Debug(c.Context(), "failed to find tasks", slog.Any("filter", filter))
+		logger_adapter.LogServiceError(t.log, c, err)
 		return fiber_adapter.ServiceError(err)
 	}
 	tasksDto := make([]TaskDTO, len(tasks))

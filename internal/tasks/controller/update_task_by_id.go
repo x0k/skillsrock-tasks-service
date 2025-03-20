@@ -1,10 +1,12 @@
 package tasks_controller
 
 import (
+	"errors"
 	"log/slog"
 
 	"github.com/gofiber/fiber/v2"
 	fiber_adapter "github.com/x0k/skillrock-tasks-service/internal/adapters/fiber"
+	"github.com/x0k/skillrock-tasks-service/internal/tasks"
 )
 
 func (t *Controller) updateTaskById(c *fiber.Ctx) error {
@@ -23,7 +25,10 @@ func (t *Controller) updateTaskById(c *fiber.Ctx) error {
 			slog.Any("task_id", taskId),
 			slog.Any("task_params", params),
 		)
+		if errors.Is(err.Err, tasks.ErrTaskNotFound) {
+			return fiber.ErrNotFound
+		}
 		return fiber_adapter.ServiceError(err)
 	}
-	return c.SendStatus(fiber.StatusOK)
+	return c.SendStatus(fiber.StatusNoContent)
 }

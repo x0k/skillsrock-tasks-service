@@ -7,6 +7,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	fiber_adapter "github.com/x0k/skillrock-tasks-service/internal/adapters/fiber"
+	logger_adapter "github.com/x0k/skillrock-tasks-service/internal/adapters/logger"
 	"github.com/x0k/skillrock-tasks-service/internal/lib/logger"
 	"github.com/x0k/skillrock-tasks-service/internal/lib/logger/sl"
 	"github.com/x0k/skillrock-tasks-service/internal/shared"
@@ -67,7 +68,7 @@ func reportToDTO(r Report) ReportDTO {
 func (a *Controller) report(c *fiber.Ctx) error {
 	r, err := a.analyticsService.Report(c.Context())
 	if err != nil {
-		a.log.Debug(c.Context(), "failed to load report")
+		logger_adapter.LogServiceError(a.log, c, err)
 		return fiber_adapter.ServiceError(err)
 	}
 	return c.JSON(reportToDTO(r))

@@ -24,7 +24,7 @@ func newAuthServer(t *testing.T) *httptest.Server {
 	})))
 	t.Cleanup(func() {
 		if t.Failed() {
-			t.Log(buf)
+			t.Log(buf.String())
 		}
 	})
 	pool := setupPgxPool(t, log.Logger)

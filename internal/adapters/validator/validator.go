@@ -30,3 +30,12 @@ func ValidateStruct(data any) error {
 	}
 	return nil
 }
+
+func ValidateArray[T any](items []T) error {
+	for _, i := range items {
+		if err := ValidateStruct(i); err != nil {
+			return err
+		}
+	}
+	return nil
+}

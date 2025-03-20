@@ -6,9 +6,9 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	fiber_adapter "github.com/x0k/skillrock-tasks-service/internal/adapters/fiber"
+	logger_adapter "github.com/x0k/skillrock-tasks-service/internal/adapters/logger"
 	validator_adapter "github.com/x0k/skillrock-tasks-service/internal/adapters/validator"
 	"github.com/x0k/skillrock-tasks-service/internal/lib/logger"
-	"github.com/x0k/skillrock-tasks-service/internal/lib/logger/sl"
 	"github.com/x0k/skillrock-tasks-service/internal/shared"
 )
 
@@ -54,7 +54,7 @@ func (ac *Controller) register(c *fiber.Ctx) error {
 	}
 	accessToken, sErr := ac.authService.Register(c.Context(), credentials.Login, credentials.Password)
 	if sErr != nil {
-		ac.log.Debug(c.Context(), sErr.Msg, sl.Err(sErr.Err))
+		logger_adapter.LogServiceError(ac.log, c, sErr)
 		if errors.Is(sErr.Err, ErrLoginIsTaken) {
 			return fiber_adapter.SpecificServiceError(sErr, fiber.StatusConflict)
 		}
@@ -77,7 +77,7 @@ func (ac *Controller) login(c *fiber.Ctx) error {
 	}
 	accessToken, sErr := ac.authService.Login(c.Context(), credentials.Login, credentials.Password)
 	if sErr != nil {
-		ac.log.Debug(c.Context(), sErr.Msg, sl.Err(sErr.Err))
+		logger_adapter.LogServiceError(ac.log, c, sErr)
 		if errors.Is(sErr.Err, ErrUserNotFound) || errors.Is(sErr.Err, ErrPasswordsMismatch) {
 			return fiber_adapter.SpecificServiceError(sErr, fiber.StatusUnauthorized)
 		}

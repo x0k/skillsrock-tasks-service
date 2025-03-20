@@ -2,10 +2,12 @@ package tasks
 
 import (
 	"context"
+	"errors"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/x0k/skillrock-tasks-service/internal/lib/db"
@@ -139,6 +141,12 @@ VALUES `)
 	}
 	q.WriteByte(';')
 	_, err := r.pool.Exec(ctx, q.String(), args...)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+			return ErrTaskIdsConflict
+		}
+	}
 	return err
 }
 
