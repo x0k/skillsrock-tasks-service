@@ -61,9 +61,9 @@ func (s *Service) Login(ctx context.Context, login string, password string) (str
 }
 
 func (s *Service) issueAccessToken(login string) (string, *shared.ServiceError) {
-	t := jwt.NewWithClaims(jwt.SigningMethodHS512, jwt.MapClaims{
+	t := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sub": login,
-		"exp": time.Now().Add(s.tokenLifetime),
+		"exp": time.Now().Add(s.tokenLifetime).Unix(),
 	})
 	accessToken, err := t.SignedString(s.secret)
 	if err != nil {
