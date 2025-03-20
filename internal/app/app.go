@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -21,12 +22,16 @@ import (
 	"github.com/x0k/skillrock-tasks-service/internal/lib/migrator"
 	"github.com/x0k/skillrock-tasks-service/internal/tasks"
 	tasks_controller "github.com/x0k/skillrock-tasks-service/internal/tasks/controller"
+
+	// migration tools
+	_ "github.com/golang-migrate/migrate/v4/database/pgx/v5"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
 func Run(ctx context.Context, cfg *Config, log *logger.Logger) error {
 	m := migrator.New(
 		log.Logger.With(sl.Component("migrator")),
-		cfg.Postgres.ConnectionURI,
+		strings.Replace(cfg.Postgres.ConnectionURI, "postgres://", "pgx5://", 1),
 		cfg.Postgres.MigrationsURI,
 	)
 	if err := m.Migrate(ctx); err != nil {
@@ -129,6 +134,14 @@ func Run(ctx context.Context, cfg *Config, log *logger.Logger) error {
 			}
 		}
 	}()
+
+	wg.Add(1)
+	context.AfterFunc(ctx, func() {
+		defer wg.Done()
+		if err := app.Shutdown(); err != nil {
+			log.Error(ctx, "shutdown failed", sl.Err(err))
+		}
+	})
 
 	err = app.Listen(cfg.Server.Address)
 	wg.Wait()

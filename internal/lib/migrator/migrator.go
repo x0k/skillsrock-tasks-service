@@ -27,7 +27,7 @@ func New(
 		log:           log,
 		connectionURI: connectionURI,
 		migrationsURI: migrationsURI,
-		attempts:      3,
+		attempts:      10,
 		timeout:       1 * time.Second,
 	}
 }
@@ -50,7 +50,7 @@ func (m *Migrator) Migrate(ctx context.Context) error {
 			slog.Int("attempt", attempt),
 			slog.String("error", err.Error()),
 		)
-		time.Sleep(m.timeout)
+		time.Sleep(m.timeout * time.Duration(attempt))
 		if attempt >= m.attempts {
 			return fmt.Errorf("failed to connect: %w", err)
 		}

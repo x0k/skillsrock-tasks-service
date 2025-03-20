@@ -1,0 +1,9 @@
+.direnv/
+api/
+deployments/
+
+.env
+.envrc
+.flake.*
+mkfile
+sqlc.yml

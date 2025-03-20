@@ -8,6 +8,12 @@ d:
 b:
   go build -o bin/app cmd/app/main.go
 
+up:
+  docker compose up -d --build
+
+down:
+  docker compose down
+
 db:
   sqlc generate
 
