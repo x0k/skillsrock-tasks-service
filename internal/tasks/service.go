@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/x0k/skillrock-tasks-service/internal/lib/logger"
 	"github.com/x0k/skillrock-tasks-service/internal/shared"
@@ -15,18 +16,20 @@ type TasksRepo interface {
 	UpdateTaskById(ctx context.Context, id TaskId, params TaskParams) error
 	RemoveTaskById(ctx context.Context, id TaskId) error
 	SaveTasks(ctx context.Context, tasks []Task) error
+	RemoveOverdueTasksWithDueDateBefore(ctx context.Context, date time.Time) error
 }
 
 type Service struct {
-	log       *logger.Logger
-	tasksRepo TasksRepo
+	log           *logger.Logger
+	tasksRepo     TasksRepo
+	pruneDuration time.Duration
 }
 
 func NewService(
 	log *logger.Logger,
 	repo TasksRepo,
 ) *Service {
-	return &Service{log, repo}
+	return &Service{log, repo, 7 * 24 * time.Hour}
 }
 
 func (s *Service) CreateTask(ctx context.Context, params TaskParams) *shared.ServiceError {
@@ -81,6 +84,14 @@ func (s *Service) ExportTasks(ctx context.Context) ([]Task, *shared.ServiceError
 func (s *Service) ImportTasks(ctx context.Context, tasks []Task) *shared.ServiceError {
 	if err := s.tasksRepo.SaveTasks(ctx, tasks); err != nil {
 		return shared.NewUnexpectedError(err, "failed to save tasks")
+	}
+	return nil
+}
+
+func (s *Service) PruneOverdueTasks(ctx context.Context) *shared.ServiceError {
+	err := s.tasksRepo.RemoveOverdueTasksWithDueDateBefore(ctx, time.Now().Add(-s.pruneDuration))
+	if err != nil {
+		return shared.NewUnexpectedError(err, "failed to remove overdue tasks")
 	}
 	return nil
 }

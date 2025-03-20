@@ -18,7 +18,7 @@ type AnalyticsRepo interface {
 type TasksRepo interface {
 	TasksCountByStatus(ctx context.Context) (map[tasks.Status]int64, error)
 	AverageCompletionTime(ctx context.Context) (float64, error)
-	CountCompletedAndOverdueTasks(ctx context.Context, duration time.Duration) (int64, int64, error)
+	CountCompletedAndOverdueTasks(ctx context.Context, date time.Time) (int64, int64, error)
 }
 
 type Service struct {
@@ -46,7 +46,7 @@ func (s *Service) GenerateReport(ctx context.Context) *shared.ServiceError {
 		return shared.NewUnexpectedError(err, "failed to calculate average completion time")
 	}
 	completeTasks, overdueTasks, err := s.tasksRepo.CountCompletedAndOverdueTasks(
-		ctx, s.reportDuration,
+		ctx, time.Now().Add(-s.reportDuration),
 	)
 	if err != nil {
 		return shared.NewUnexpectedError(err, "failed to count complete and overdue tasks")

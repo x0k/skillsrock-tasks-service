@@ -3,6 +3,8 @@ package app
 import (
 	"context"
 	"fmt"
+	"sync"
+	"time"
 
 	jwtware "github.com/gofiber/contrib/jwt"
 	"github.com/gofiber/fiber/v2"
@@ -72,9 +74,8 @@ func Run(ctx context.Context, cfg *Config, log *logger.Logger) error {
 		pgxPool,
 		queries,
 	)
-	tasksGroup := app.Group("/tasks")
-	tasksGroup.Use(authMiddleware)
-	tasks_controller.New(
+	tasksGroup := app.Group("/tasks").Use(authMiddleware)
+	tasksController := tasks_controller.New(
 		tasksGroup,
 		log.With(sl.Component("tasks_controller")),
 		tasks.NewService(
@@ -83,9 +84,8 @@ func Run(ctx context.Context, cfg *Config, log *logger.Logger) error {
 		),
 	)
 
-	analyticsGroup := app.Group("/analytics")
-	analyticsGroup.Use(authMiddleware)
-	analytics.NewController(
+	analyticsGroup := app.Group("/analytics").Use(authMiddleware)
+	analyticsController := analytics.NewController(
 		analyticsGroup,
 		log.With(sl.Component("analytics_controller")),
 		analytics.NewService(
@@ -98,5 +98,39 @@ func Run(ctx context.Context, cfg *Config, log *logger.Logger) error {
 		),
 	)
 
-	return app.Listen(cfg.Server.Address)
+	var wg sync.WaitGroup
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		ticker := time.NewTicker(24 * time.Hour)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				tasksController.PruneOverdueTasks(ctx)
+			}
+		}
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		ticker := time.NewTicker(6 * time.Hour)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				analyticsController.GenerateReport(ctx)
+			}
+		}
+	}()
+
+	err = app.Listen(cfg.Server.Address)
+	wg.Wait()
+	return err
 }

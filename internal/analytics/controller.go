@@ -3,10 +3,12 @@ package analytics
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
 	"github.com/gofiber/fiber/v2"
 	fiber_adapter "github.com/x0k/skillrock-tasks-service/internal/adapters/fiber"
 	"github.com/x0k/skillrock-tasks-service/internal/lib/logger"
+	"github.com/x0k/skillrock-tasks-service/internal/lib/logger/sl"
 	"github.com/x0k/skillrock-tasks-service/internal/shared"
 	"github.com/x0k/skillrock-tasks-service/internal/tasks"
 )
@@ -33,7 +35,12 @@ func NewController(
 
 func (a *Controller) GenerateReport(ctx context.Context) {
 	if err := a.analyticsService.GenerateReport(ctx); err != nil {
-		a.log.Debug(ctx, "failed to generate report")
+		a.log.Error(
+			ctx,
+			"failed to generate report",
+			slog.String("message", err.Msg),
+			sl.Err(err.Err),
+		)
 	}
 }
 

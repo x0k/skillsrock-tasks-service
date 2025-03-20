@@ -16,6 +16,7 @@ type TasksService interface {
 	RemoveTaskById(ctx context.Context, id tasks.TaskId) *shared.ServiceError
 	ExportTasks(ctx context.Context) ([]tasks.Task, *shared.ServiceError)
 	ImportTasks(ctx context.Context, tasks []tasks.Task) *shared.ServiceError
+	PruneOverdueTasks(ctx context.Context) *shared.ServiceError
 }
 
 type Controller struct {

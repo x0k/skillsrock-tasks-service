@@ -244,12 +244,19 @@ func (r *Repo) AverageCompletionTime(ctx context.Context) (float64, error) {
 	return r.queries.AverageTaskCompletionTime(ctx)
 }
 
-func (r *Repo) CountCompletedAndOverdueTasks(ctx context.Context, duration time.Duration) (int64, int64, error) {
+func (r *Repo) CountCompletedAndOverdueTasks(ctx context.Context, date time.Time) (int64, int64, error) {
 	row, err := r.queries.CountCompletedAndOverdueTasks(ctx, pgtype.Date{
-		Time:  time.Now().Add(-duration),
+		Time:  date,
 		Valid: true,
 	})
 	return row.CompletedCount, row.OverdueCount, err
+}
+
+func (r *Repo) RemoveOverdueTasksWithDueDateBefore(ctx context.Context, date time.Time) error {
+	return r.queries.DeleteOverdueTasks(ctx, pgtype.Date{
+		Time:  date,
+		Valid: true,
+	})
 }
 
 func (r *Repo) descriptionToPg(d *string) pgtype.Text {
