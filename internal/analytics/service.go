@@ -57,7 +57,7 @@ func (s *Service) GenerateReport(ctx context.Context) *shared.ServiceError {
 		AmountOfCompletedTasks:    completeTasks,
 		AmountOfOverdueTasks:      overdueTasks,
 	}); err != nil {
-		return shared.NewServiceError(err, "failed to save report")
+		return shared.NewUnexpectedError(err, "failed to save report")
 	}
 	return nil
 }

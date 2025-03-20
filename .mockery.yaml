@@ -11,3 +11,7 @@ packages:
   github.com/x0k/skillrock-tasks-service/internal/tasks:
     interfaces:
       TasksRepo:
+  github.com/x0k/skillrock-tasks-service/internal/analytics:
+    interfaces:
+      AnalyticsRepo:
+      TasksRepo:

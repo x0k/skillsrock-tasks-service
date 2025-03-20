@@ -24,7 +24,6 @@ migration:
   migrate create -ext sql -dir db/migrations -seq $1
 
 mocks:
-  rm -rf mocks
   mockery
 
 t:
