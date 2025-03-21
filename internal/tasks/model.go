@@ -140,7 +140,7 @@ func NewTask(
 		Priority:    priority,
 		DueDate:     dueDate,
 		CreatedAt:   createdAt,
-		UpdatedAt:   createdAt,
+		UpdatedAt:   updatedAt,
 	}, nil
 }
 
