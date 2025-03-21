@@ -34,3 +34,6 @@ t:
 
 lint:
   golangci-lint run ./...
+
+psql:
+  psql -U admin -d tasks -h localhost -p 5432

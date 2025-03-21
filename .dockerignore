@@ -2,6 +2,7 @@
 api/
 deployments/
 bin/
+docs/
 
 .env
 .envrc
@@ -10,3 +11,4 @@ mkfile
 sqlc.yml
 .mockery.yaml
 docker-compose.yml
+README.md
