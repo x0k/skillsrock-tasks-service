@@ -47,12 +47,12 @@ func (a *Controller) GenerateReport(ctx context.Context) {
 }
 
 type ReportDTO struct {
-	PendingTasksCount           int64  `json:"PendingTasksCount"`
-	InProgressTasksCount        int64  `json:"InProgressTasksCount"`
-	DoneTasksCount              int64  `json:"DoneTasksCount"`
-	AverageCompletionTimeInDays string `json:"AverageCompletionTimeInDays"`
-	AmountOfCompletedTasks      int64  `json:"AmountOfCompletedTasks"`
-	AmountOfOverdueTasks        int64  `json:"AmountOfOverdueTasks"`
+	PendingTasksCount           int64  `json:"pending_tasks_count"`
+	InProgressTasksCount        int64  `json:"in_progress_tasks_count"`
+	DoneTasksCount              int64  `json:"done_tasks_count"`
+	AverageCompletionTimeInDays string `json:"average_completion_time_in_days"`
+	AmountOfCompletedTasks      int64  `json:"amount_of_completed_tasks"`
+	AmountOfOverdueTasks        int64  `json:"amount_of_overdue_tasks"`
 }
 
 const dayInSeconds = 24 * 60 * 60
