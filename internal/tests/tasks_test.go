@@ -22,14 +22,14 @@ const insertTasks = `
 INSERT INTO task
   (id, title, description, status, priority, due_date, created_at, updated_at)
 VALUES
-	('11111111-1111-1111-1111-111111111111', 'Fix login bug',        'Investigate and fix login issue for users.', 'pending',     'high',   '2025-03-02', '2025-03-01', '2025-03-01'),
-	('22222222-2222-2222-2222-222222222222', 'Refactor API',         NULL,                                         'in_progress', 'medium', '2025-03-03', '2025-03-02', '2025-03-02'),
-  ('33333333-3333-3333-3333-333333333333', 'Write tests',          'Increase test coverage for task module.',    'pending',     'low',    '2025-03-04', '2025-03-03', '2025-03-03'),
-  ('44444444-4444-4444-4444-444444444444', 'Update documentation', 'Document new API endpoints.',                'done',        'low',    '2025-03-05', '2025-03-04', '2025-03-04'),
-  ('55555555-5555-5555-5555-555555555555', 'Deploy new release',   NULL,                                         'in_progress', 'high',   '2025-03-06', '2025-03-05', '2025-03-05');
+	('11111111-1111-1111-1111-111111111111', 'Fix login bug',        'Investigate and fix login issue for users.', 'pending',     'high',   '2025-02-02', '2025-02-01', '2025-02-02'),
+	('22222222-2222-2222-2222-222222222222', 'Refactor API',         NULL,                                         'in_progress', 'medium', '2025-02-03', '2025-02-02', '2025-02-03'),
+  ('33333333-3333-3333-3333-333333333333', 'Write tests',          'Increase test coverage for task module.',    'pending',     'low',    '2025-02-04', '2025-02-03', '2025-02-04'),
+  ('44444444-4444-4444-4444-444444444444', 'Update documentation', 'Document new API endpoints.',                'done',        'low',    '2025-02-05', '2025-02-04', '2025-02-05'),
+  ('55555555-5555-5555-5555-555555555555', 'Deploy new release',   NULL,                                         'in_progress', 'high',   '2025-02-06', '2025-02-05', '2025-02-06');
 `
 
-func newTasksServer(t *testing.T) *httptest.Server {
+func newTasksServer(t *testing.T) (*httptest.Server, *tasks_controller.Controller) {
 	var buf bytes.Buffer
 	log := logger.New(slog.New(slog.NewTextHandler(&buf, &slog.HandlerOptions{
 		Level: slog.LevelDebug,
@@ -42,7 +42,7 @@ func newTasksServer(t *testing.T) *httptest.Server {
 	pool := setupPgxPool(t, log.Logger)
 	execSql(t, pool, insertTasks)
 	app := fiber.New()
-	tasks_controller.New(
+	c := tasks_controller.New(
 		app,
 		log,
 		tasks.NewService(
@@ -54,11 +54,11 @@ func newTasksServer(t *testing.T) *httptest.Server {
 			),
 		),
 	)
-	return httptest.NewServer(adaptor.FiberApp(app))
+	return httptest.NewServer(adaptor.FiberApp(app)), c
 }
 
 func TestFindTasks(t *testing.T) {
-	server := newTasksServer(t)
+	server, _ := newTasksServer(t)
 	defer server.Close()
 
 	e := httpexpect.Default(t, server.URL)
@@ -73,23 +73,23 @@ func TestFindTasks(t *testing.T) {
 		Expect().Status(http.StatusOK).
 		JSON().Array().Length().IsEqual(2)
 
-	e.GET("/").WithQuery("due_before", "2025-03-04").
+	e.GET("/").WithQuery("due_before", "2025-02-04").
 		Expect().Status(http.StatusOK).
 		JSON().Array().Length().IsEqual(2)
 
-	e.GET("/").WithQuery("due_after", "2025-03-03").
+	e.GET("/").WithQuery("due_after", "2025-02-03").
 		Expect().Status(http.StatusOK).
 		JSON().Array().Length().IsEqual(3)
 
 	e.GET("/").WithQuery("title", "re").
 		WithQuery("status", "in_progress").
-		WithQuery("due_after", "2025-03-02").
+		WithQuery("due_after", "2025-02-02").
 		Expect().Status(http.StatusOK).
 		JSON().Array().Length().IsEqual(2)
 }
 
 func TestCreateTask(t *testing.T) {
-	server := newTasksServer(t)
+	server, _ := newTasksServer(t)
 	defer server.Close()
 
 	now := time.Now()
@@ -111,7 +111,7 @@ func TestCreateTask(t *testing.T) {
 }
 
 func TestUpdateTask(t *testing.T) {
-	server := newTasksServer(t)
+	server, _ := newTasksServer(t)
 	defer server.Close()
 
 	dueDate := time.Date(2025, 04, 02, 0, 0, 0, 0, time.Local).Format(time.DateOnly)
@@ -146,7 +146,7 @@ func TestUpdateTask(t *testing.T) {
 }
 
 func TestDeleteTask(t *testing.T) {
-	server := newTasksServer(t)
+	server, _ := newTasksServer(t)
 	defer server.Close()
 
 	e := httpexpect.Default(t, server.URL)
@@ -158,7 +158,7 @@ func TestDeleteTask(t *testing.T) {
 }
 
 func TestExportTasks(t *testing.T) {
-	server := newTasksServer(t)
+	server, _ := newTasksServer(t)
 	defer server.Close()
 
 	e := httpexpect.Default(t, server.URL)
@@ -168,12 +168,12 @@ func TestExportTasks(t *testing.T) {
 }
 
 func TestImportTasks(t *testing.T) {
-	server := newTasksServer(t)
+	server, _ := newTasksServer(t)
 	defer server.Close()
 
 	dto := make([]tasks_controller.TaskDTO, 100)
 	now := time.Now()
-	nowDate := now.Format(time.DateOnly)
+	nowDate := now.Format(time.RFC3339)
 	dueDate := now.Add(time.Hour).Format(time.DateOnly)
 	for i := range 100 {
 		dto[i] = tasks_controller.TaskDTO{
@@ -196,4 +196,39 @@ func TestImportTasks(t *testing.T) {
 
 	e.POST("/import").WithJSON(dto).
 		Expect().Status(http.StatusConflict)
+}
+
+func TestPruneOverdueTasks(t *testing.T) {
+	server, c := newTasksServer(t)
+	defer server.Close()
+
+	c.PruneOverdueTasks(t.Context())
+
+	e := httpexpect.Default(t, server.URL)
+	e.GET("/").Expect().JSON().
+		Array().Length().IsEqual(1)
+
+	dto := make([]tasks_controller.TaskDTO, 10)
+	now := time.Now()
+	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+	dayDuration := 24 * time.Hour
+	for i := range 10 {
+		date := today.Add(-time.Duration(i) * dayDuration)
+		dto[i] = tasks_controller.TaskDTO{
+			Id:        tasks.NewTaskId().String(),
+			Title:     strconv.Itoa(i),
+			Status:    tasks.Pending.String(),
+			Priority:  tasks.Low.String(),
+			DueDate:   date.Add(time.Hour).Format(time.DateOnly),
+			CreatedAt: date.Format(time.RFC3339),
+			UpdatedAt: date.Format(time.RFC3339),
+		}
+	}
+	e.POST("/import").WithJSON(dto).
+		Expect().Status(http.StatusCreated)
+
+	c.PruneOverdueTasks(t.Context())
+
+	e.GET("/").Expect().JSON().
+		Array().Length().IsEqual(9)
 }

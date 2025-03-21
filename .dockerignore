@@ -9,3 +9,4 @@ bin/
 mkfile
 sqlc.yml
 .mockery.yaml
+docker-compose.yml

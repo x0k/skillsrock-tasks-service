@@ -42,12 +42,12 @@ func (r *Repo) SaveTask(ctx context.Context, task Task) error {
 			Time:  task.DueDate,
 			Valid: true,
 		},
-		CreatedAt: pgtype.Date{
-			Time:  task.CreatedAt,
+		CreatedAt: pgtype.Timestamp{
+			Time:  task.CreatedAt.UTC(),
 			Valid: true,
 		},
-		UpdatedAt: pgtype.Date{
-			Time:  task.UpdatedAt,
+		UpdatedAt: pgtype.Timestamp{
+			Time:  task.UpdatedAt.UTC(),
 			Valid: true,
 		},
 	})
@@ -128,13 +128,13 @@ VALUES `)
 			Valid: true,
 		})
 		q.WriteByte(',')
-		push(pgtype.Date{
-			Time:  t.CreatedAt,
+		push(pgtype.Timestamp{
+			Time:  t.CreatedAt.UTC(),
 			Valid: true,
 		})
 		q.WriteByte(',')
-		push(pgtype.Date{
-			Time:  t.UpdatedAt,
+		push(pgtype.Timestamp{
+			Time:  t.UpdatedAt.UTC(),
 			Valid: true,
 		})
 		q.WriteByte(')')
@@ -280,8 +280,8 @@ func (r *Repo) AverageCompletionTime(ctx context.Context) (float64, error) {
 }
 
 func (r *Repo) CountCompletedAndOverdueTasks(ctx context.Context, date time.Time) (int64, int64, error) {
-	row, err := r.queries.CountCompletedAndOverdueTasks(ctx, pgtype.Date{
-		Time:  date,
+	row, err := r.queries.CountCompletedAndOverdueTasks(ctx, pgtype.Timestamp{
+		Time:  date.UTC(),
 		Valid: true,
 	})
 	return row.CompletedCount, row.OverdueCount, err

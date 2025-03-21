@@ -25,8 +25,8 @@ func taskToDTO(task tasks.Task) TaskDTO {
 		Status:      task.Status.String(),
 		Priority:    task.Priority.String(),
 		DueDate:     task.DueDate.Format(time.DateOnly),
-		CreatedAt:   task.CreatedAt.Format(time.DateOnly),
-		UpdatedAt:   task.UpdatedAt.Format(time.DateOnly),
+		CreatedAt:   task.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:   task.UpdatedAt.Format(time.RFC3339),
 	}
 }
 
@@ -48,10 +48,10 @@ func taskFromDTO(dto TaskDTO) (tasks.Task, error) {
 	if task.DueDate, err = time.Parse(time.DateOnly, dto.DueDate); err != nil {
 		return task, err
 	}
-	if task.CreatedAt, err = time.Parse(time.DateOnly, dto.CreatedAt); err != nil {
+	if task.CreatedAt, err = time.Parse(time.RFC3339, dto.CreatedAt); err != nil {
 		return task, err
 	}
-	if task.UpdatedAt, err = time.Parse(time.DateOnly, dto.UpdatedAt); err != nil {
+	if task.UpdatedAt, err = time.Parse(time.RFC3339, dto.UpdatedAt); err != nil {
 		return task, err
 	}
 	return tasks.NewTask(

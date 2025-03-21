@@ -16,8 +16,8 @@ CREATE TABLE
     status task_status NOT NULL,
     priority task_priority NOT NULL,
     due_date DATE NOT NULL,
-    created_at DATE NOT NULL DEFAULT CURRENT_DATE,
-    updated_at DATE NOT NULL DEFAULT CURRENT_DATE
+    created_at TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP NOT NULL
   );
 
 CREATE EXTENSION IF NOT EXISTS pg_trgm;

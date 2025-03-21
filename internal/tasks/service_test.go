@@ -57,17 +57,6 @@ func TestServiceCreateTask(t *testing.T) {
 			params: params,
 		},
 		{
-			name:    "invalid due date",
-			service: newTestService(t, nil),
-			params: tasks.TaskParams{
-				Title:    title,
-				DueDate:  time.Now(),
-				Status:   tasks.Pending,
-				Priority: tasks.Low,
-			},
-			err: shared.NewServiceError(tasks.ErrInvalidDueDate, ""),
-		},
-		{
 			name: "unexpected error",
 			service: newTestService(t, func(repo *tasks.MockTasksRepo) {
 				repo.EXPECT().SaveTask(mock.Anything, mock.Anything).Return(unexpectedErr)

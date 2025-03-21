@@ -12,7 +12,6 @@ var ErrInvalidPriority = errors.New("invalid priority")
 var ErrTaskNotFound = errors.New("task not found")
 var ErrTaskIsAlreadyDone = errors.New("task is already done")
 var ErrInvalidTasksTitle = errors.New("invalid task title")
-var ErrInvalidDueDate = errors.New("invalid due date")
 var ErrTaskIdsConflict = errors.New("task ids conflict")
 
 type Status string
@@ -126,9 +125,6 @@ func NewTask(
 ) (Task, error) {
 	if len(title) == 0 {
 		return Task{}, ErrInvalidTasksTitle
-	}
-	if dueDate.Before(createdAt) {
-		return Task{}, ErrInvalidDueDate
 	}
 	if !status.IsValid() {
 		return Task{}, ErrInvalidStatus

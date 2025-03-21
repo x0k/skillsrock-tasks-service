@@ -46,7 +46,7 @@ func (q *Queries) AllTasks(ctx context.Context) ([]Task, error) {
 
 const averageTaskCompletionTime = `-- name: AverageTaskCompletionTime :one
 SELECT
-    AVG(updated_at - completed_at) AS average_completion_time
+  AVG(EXTRACT(EPOCH FROM (updated_at - created_at))) AS average_completion_time
 FROM
     task
 WHERE
@@ -76,7 +76,7 @@ type CountCompletedAndOverdueTasksRow struct {
 	OverdueCount   int64
 }
 
-func (q *Queries) CountCompletedAndOverdueTasks(ctx context.Context, updatedAt pgtype.Date) (CountCompletedAndOverdueTasksRow, error) {
+func (q *Queries) CountCompletedAndOverdueTasks(ctx context.Context, updatedAt pgtype.Timestamp) (CountCompletedAndOverdueTasksRow, error) {
 	row := q.db.QueryRow(ctx, countCompletedAndOverdueTasks, updatedAt)
 	var i CountCompletedAndOverdueTasksRow
 	err := row.Scan(&i.CompletedCount, &i.OverdueCount)
@@ -147,8 +147,8 @@ type InsertTaskParams struct {
 	Status      TaskStatus
 	Priority    TaskPriority
 	DueDate     pgtype.Date
-	CreatedAt   pgtype.Date
-	UpdatedAt   pgtype.Date
+	CreatedAt   pgtype.Timestamp
+	UpdatedAt   pgtype.Timestamp
 }
 
 func (q *Queries) InsertTask(ctx context.Context, arg InsertTaskParams) error {

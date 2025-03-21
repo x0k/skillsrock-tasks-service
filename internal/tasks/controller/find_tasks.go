@@ -1,8 +1,6 @@
 package tasks_controller
 
 import (
-	"fmt"
-
 	"github.com/gofiber/fiber/v2"
 	fiber_adapter "github.com/x0k/skillrock-tasks-service/internal/adapters/fiber"
 	logger_adapter "github.com/x0k/skillrock-tasks-service/internal/adapters/logger"
@@ -17,7 +15,6 @@ func (t *Controller) findTasks(c *fiber.Ctx) error {
 	}
 	status := c.Query("status")
 	if status != "" {
-		fmt.Println(filter.Status)
 		if s, err := t.status(c, status); err != nil {
 			return err
 		} else {

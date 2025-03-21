@@ -2,6 +2,7 @@ package analytics
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 
@@ -54,12 +55,14 @@ type ReportDTO struct {
 	AmountOfOverdueTasks        int64  `json:"AmountOfOverdueTasks"`
 }
 
+const dayInSeconds = 24 * 60 * 60
+
 func reportToDTO(r Report) ReportDTO {
 	return ReportDTO{
 		PendingTasksCount:           r.TasksCountByStatus[tasks.Pending],
 		InProgressTasksCount:        r.TasksCountByStatus[tasks.InProgress],
 		DoneTasksCount:              r.TasksCountByStatus[tasks.Done],
-		AverageCompletionTimeInDays: fmt.Sprintf("%.2f", r.AverageTaskCompletionTime),
+		AverageCompletionTimeInDays: fmt.Sprintf("%.2f", r.AverageTaskCompletionTime/dayInSeconds),
 		AmountOfCompletedTasks:      r.AmountOfCompletedTasks,
 		AmountOfOverdueTasks:        r.AmountOfCompletedTasks,
 	}
@@ -69,6 +72,9 @@ func (a *Controller) report(c *fiber.Ctx) error {
 	r, err := a.analyticsService.Report(c.Context())
 	if err != nil {
 		logger_adapter.LogServiceError(a.log, c, err)
+		if errors.Is(err.Err, ErrReportNotFound) {
+			return fiber.ErrNotFound
+		}
 		return fiber_adapter.ServiceError(err)
 	}
 	return c.JSON(reportToDTO(r))

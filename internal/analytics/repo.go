@@ -27,8 +27,8 @@ func (r *Repo) SaveReport(ctx context.Context, report Report) error {
 	if err != nil {
 		return fmt.Errorf("failed to marshal report: %w", err)
 	}
-	if err := r.redis.Set(ctx, "report", bytes, 0); err != nil {
-		return fmt.Errorf("failed to persist report %w", err.Err())
+	if err := r.redis.Set(ctx, "report", bytes, 0).Err(); err != nil {
+		return fmt.Errorf("failed to persist report %w", err)
 	}
 	return nil
 }

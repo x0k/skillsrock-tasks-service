@@ -55,11 +55,11 @@ func (s *Service) CreateTask(ctx context.Context, params TaskParams) *shared.Ser
 }
 
 func (s *Service) FindTasks(ctx context.Context, filter TasksFilter) ([]Task, *shared.ServiceError) {
-	if tasks, err := s.tasksRepo.FindTasks(ctx, filter); err != nil {
+	tasks, err := s.tasksRepo.FindTasks(ctx, filter)
+	if err != nil {
 		return tasks, shared.NewUnexpectedError(err, "failed to filter tasks")
-	} else {
-		return tasks, nil
 	}
+	return tasks, nil
 }
 
 func (s *Service) UpdateTaskById(ctx context.Context, id TaskId, params TaskParams) *shared.ServiceError {
@@ -103,7 +103,8 @@ func (s *Service) ImportTasks(ctx context.Context, tasks []Task) *shared.Service
 }
 
 func (s *Service) PruneOverdueTasks(ctx context.Context) *shared.ServiceError {
-	err := s.tasksRepo.RemoveOverdueTasksWithDueDateBefore(ctx, time.Now().Add(-s.pruneDuration))
+	date := time.Now().Add(-s.pruneDuration)
+	err := s.tasksRepo.RemoveOverdueTasksWithDueDateBefore(ctx, date)
 	if err != nil {
 		return shared.NewUnexpectedError(err, "failed to remove overdue tasks")
 	}

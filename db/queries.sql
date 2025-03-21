@@ -35,7 +35,7 @@ SELECT count(*) AS tasks_count, status FROM task GROUP BY status;
 
 -- name: AverageTaskCompletionTime :one
 SELECT
-    AVG(updated_at - completed_at) AS average_completion_time
+  AVG(EXTRACT(EPOCH FROM (updated_at - created_at))) AS average_completion_time
 FROM
     task
 WHERE

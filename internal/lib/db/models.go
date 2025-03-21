@@ -104,8 +104,8 @@ type Task struct {
 	Status      TaskStatus
 	Priority    TaskPriority
 	DueDate     pgtype.Date
-	CreatedAt   pgtype.Date
-	UpdatedAt   pgtype.Date
+	CreatedAt   pgtype.Timestamp
+	UpdatedAt   pgtype.Timestamp
 }
 
 type User struct {

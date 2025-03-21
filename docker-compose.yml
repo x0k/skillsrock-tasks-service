@@ -28,6 +28,8 @@ services:
       POSTGRES_DB: tasks
     ports:
       - "5432:5432"
+    volumes:
+      - postgres-storage:/var/lib/postgresql/data
 
   app:
     build: .
@@ -42,3 +44,4 @@ services:
       - postgres
 volumes:
   grafana-storage: {}
+  postgres-storage: {}
