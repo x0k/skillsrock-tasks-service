@@ -8,10 +8,13 @@ d:
 b:
   go build -o bin/app cmd/app/main.go
 
-up:
+env:
+  export USER_ID="$(id -u)"
+
+up: env
   docker compose up -d --build
 
-down:
+down: env
   docker compose down -v
 
 db:

@@ -31,12 +31,18 @@ type AuthConfig struct {
 	TokenLifetime time.Duration `yaml:"token_lifetime" env:"AUTH_TOKEN_LIFETIME" env-default:"10m"`
 }
 
+type MetricsConfig struct {
+	Enabled bool   `yaml:"enabled" env:"METRICS_ENABLED"`
+	Address string `yaml:"address" env:"METRICS_ADDRESS" env-default:"0.0.0.0:9099"`
+}
+
 type Config struct {
-	Logger   LoggerConfig `yaml:"logger"`
-	Postgres PgConfig     `yaml:"postgres"`
-	Redis    RedisConfig  `yaml:"redis"`
-	Server   ServerConfig `yaml:"server"`
-	Auth     AuthConfig   `yaml:"auth"`
+	Logger   LoggerConfig  `yaml:"logger"`
+	Postgres PgConfig      `yaml:"postgres"`
+	Redis    RedisConfig   `yaml:"redis"`
+	Server   ServerConfig  `yaml:"server"`
+	Auth     AuthConfig    `yaml:"auth"`
+	Metrics  MetricsConfig `yaml:"metrics"`
 }
 
 func MustLoadConfig(configPath string) *Config {

@@ -21,10 +21,3 @@ func Component(component string) slog.Attr {
 		Value: slog.StringValue(component),
 	}
 }
-
-func Module(module string) slog.Attr {
-	return slog.Attr{
-		Key:   "module",
-		Value: slog.StringValue(module),
-	}
-}

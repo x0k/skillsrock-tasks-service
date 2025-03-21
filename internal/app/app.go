@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"strings"
 	"sync"
 	"time"
@@ -11,6 +12,9 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/collectors"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/redis/go-redis/v9"
 	slogfiber "github.com/samber/slog-fiber"
 
@@ -143,13 +147,39 @@ func Run(ctx context.Context, cfg *Config, log *logger.Logger) error {
 		}
 	}()
 
-	wg.Add(1)
 	context.AfterFunc(ctx, func() {
-		defer wg.Done()
 		if err := app.Shutdown(); err != nil {
 			log.Error(ctx, "shutdown failed", sl.Err(err))
 		}
 	})
+
+	if cfg.Metrics.Enabled {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			mux := http.NewServeMux()
+			reg := prometheus.NewRegistry()
+			reg.MustRegister(
+				collectors.NewGoCollector(),
+				collectors.NewProcessCollector(
+					collectors.ProcessCollectorOpts{},
+				),
+			)
+			mux.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
+			srv := &http.Server{
+				Addr:    cfg.Metrics.Address,
+				Handler: mux,
+			}
+			context.AfterFunc(ctx, func() {
+				if err := srv.Shutdown(ctx); err != nil {
+					log.Error(ctx, "failed to shutdown metrics server", sl.Err(err))
+				}
+			})
+			if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+				log.Error(ctx, "failed to stop metrics server", sl.Err(err))
+			}
+		}()
+	}
 
 	err = app.Listen(cfg.Server.Address)
 	wg.Wait()

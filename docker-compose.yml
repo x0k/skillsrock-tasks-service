@@ -4,15 +4,22 @@ services:
     image: prom/prometheus:v3.2.1
     volumes:
       - ./deployments/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
 
   grafana:
     image: grafana/grafana:11.5.2
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
+    user: ${USER_ID}
     volumes:
       - ./deployments/grafana/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yaml
+      - ./deployments/grafana/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yaml
+      - ./deployments/grafana/dashboards:/var/lib/grafana/dashboards
       - grafana-storage:/var/lib/grafana
+    ports:
+      - "3000:3000"
 
   redis:
     image: redis:7.4.2-alpine3.21
@@ -39,6 +46,7 @@ services:
       PG_CONNECTION_URI: postgres://admin:admin@postgres:5432/tasks
       REDIS_CONNECTION_URI: "redis://redis:6379/0"
       AUTH_SECRET: auth_secret
+      METRICS_ENABLED: true
     depends_on:
       - redis
       - postgres
